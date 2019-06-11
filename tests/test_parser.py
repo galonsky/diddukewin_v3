@@ -26,7 +26,7 @@ class TestParse:
             return file.read()
 
     def test_one_game_gets_correct_fields(self, file_with_one_complete_game):
-        games = list(Parser(file_with_one_complete_game).parse())
+        games = list(Parser().parse(file_with_one_complete_game))
         assert games == [
             Game(
                 date='Sun, 3/31',
@@ -38,7 +38,7 @@ class TestParse:
         ]
 
     def test_two_games(self, file_with_two_games):
-        games = list(Parser(file_with_two_games).parse())
+        games = list(Parser().parse(file_with_two_games))
         assert games == [
             Game(
                 date='Sun, 3/32',
@@ -57,7 +57,7 @@ class TestParse:
         ]
 
     def test_mets(self, mets):
-        games = list(Parser(mets).parse())
+        games = list(Parser().parse(mets))
         assert games == [
             Game(
                 date='Sat, 6/8',
@@ -90,7 +90,7 @@ class TestParse:
         ]
 
     def test_cubs(self, cubs):
-        games = list(Parser(cubs).parse())
+        games = list(Parser().parse(cubs))
         assert games == [
             Game(
                 date='Sat, 6/8',

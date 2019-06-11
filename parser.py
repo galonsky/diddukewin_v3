@@ -17,13 +17,11 @@ DATA_GROUPS = (
 
 
 class Parser:
-    def __init__(self, body):
-        self.body = body
 
-    def parse(self) -> Iterator[Game]:
-        match = INITIAL_PATTERN.search(self.body)
+    def parse(self, body) -> Iterator[Game]:
+        match = INITIAL_PATTERN.search(body)
         start = match.start()
-        matches = DATA_PATTERN.finditer(self.body, pos=start)
+        matches = DATA_PATTERN.finditer(body, pos=start)
         while True:
             game_dict = {}
             for group_name in DATA_GROUPS:
