@@ -7,22 +7,22 @@ from parser import Parser
 class TestParse:
     @pytest.fixture
     def file_with_two_games(self):
-        with open('score_simplified.html', 'r') as file:
+        with open('tests/html/score_simplified.html', 'r') as file:
             return file.read()
 
     @pytest.fixture
     def mets(self):
-        with open('mets.html', 'r') as file:
+        with open('tests/html/mets.html', 'r') as file:
             return file.read()
 
     @pytest.fixture
     def cubs(self):
-        with open('cubs.html', 'r') as file:
+        with open('tests/html/cubs.html', 'r') as file:
             return file.read()
 
     @pytest.fixture
     def file_with_one_complete_game(self):
-        with open('score.html', 'r') as file:
+        with open('tests/html/score.html', 'r') as file:
             return file.read()
 
     def test_one_game_gets_correct_fields(self, file_with_one_complete_game):
