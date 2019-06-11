@@ -17,3 +17,9 @@ class Game:
 
     def has_ended(self):
         return bool(ENDED_PATTERN.search(self.winlose))
+
+    def get_link(self):
+        if self.has_ended():
+            return 'http://espn.go.com/ncb/recap{}'.format(self.urlslug)
+        else:
+            return 'http://espn.go.com/ncb/gamecast{}'.format(self.urlslug)

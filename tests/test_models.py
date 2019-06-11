@@ -57,3 +57,23 @@ class TestHasEnded:
             urlslug='',
             score='',
         ).has_ended()
+
+
+class TestGetLink:
+    def test_when_ended_returns_recap(self):
+        assert Game(
+            date='',
+            opponent='',
+            winlose='L',
+            urlslug='?slug',
+            score='',
+        ).get_link() == 'http://espn.go.com/ncb/recap?slug'
+
+    def test_when_not_ended_returns_gamecast(self):
+        assert Game(
+            date='',
+            opponent='',
+            winlose='',
+            urlslug='?slug',
+            score='',
+        ).get_link() == 'http://espn.go.com/ncb/gamecast?slug'
