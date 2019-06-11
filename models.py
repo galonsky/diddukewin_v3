@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import re
 
-VALID_SCORE_PATTERN = re.compile(r'[0-9]+-[0-9]+')
-ENDED_PATTERN = re.compile(r'[WL]')
+VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
+ENDED_PATTERN = re.compile(r"[WL]")
+
 
 @dataclass
 class Game:
@@ -20,6 +21,6 @@ class Game:
 
     def get_link(self):
         if self.has_ended():
-            return 'http://espn.go.com/ncb/recap{}'.format(self.urlslug)
+            return "http://espn.go.com/ncb/recap{}".format(self.urlslug)
         else:
-            return 'http://espn.go.com/ncb/gamecast{}'.format(self.urlslug)
+            return "http://espn.go.com/ncb/gamecast{}".format(self.urlslug)

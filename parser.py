@@ -3,21 +3,13 @@ from typing import Iterator
 
 from models import Game
 
-INITIAL_PATTERN = re.compile(r'teamschedule')
-DATA_PATTERN = re.compile(
-    r"gamecast(?P<urlslug>[^']*)'>(?P<datum>[^<]*)<"
-)
+INITIAL_PATTERN = re.compile(r"teamschedule")
+DATA_PATTERN = re.compile(r"gamecast(?P<urlslug>[^']*)'>(?P<datum>[^<]*)<")
 
-DATA_GROUPS = (
-    'date',
-    'opponent',
-    'winlose',
-    'score',
-)
+DATA_GROUPS = ("date", "opponent", "winlose", "score")
 
 
 class Parser:
-
     def parse(self, body) -> Iterator[Game]:
         match = INITIAL_PATTERN.search(body)
         start = match.start()
@@ -30,6 +22,6 @@ class Parser:
                 except StopIteration:
                     return
 
-                game_dict['urlslug'] = match.group('urlslug').strip()
-                game_dict[group_name] = match.group('datum').strip()
+                game_dict["urlslug"] = match.group("urlslug").strip()
+                game_dict[group_name] = match.group("datum").strip()
             yield Game(**game_dict)

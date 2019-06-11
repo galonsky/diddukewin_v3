@@ -5,11 +5,8 @@ from parser import Parser
 
 
 class Evaluator:
-
     def __init__(
-            self,
-            fetcher: ScoreFetcher = ScoreFetcher(),
-            parser: Parser = Parser(),
+        self, fetcher: ScoreFetcher = ScoreFetcher(), parser: Parser = Parser()
     ):
         self.fetcher = fetcher
         self.parser = parser
