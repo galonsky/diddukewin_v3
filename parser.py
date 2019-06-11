@@ -15,6 +15,7 @@ DATA_GROUPS = (
     'score',
 )
 
+
 class Parser:
     def __init__(self, body):
         self.body = body
