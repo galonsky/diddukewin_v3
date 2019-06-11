@@ -56,6 +56,68 @@ class TestParse:
             ),
         ]
 
-    def test_mets(self, cubs):
+    def test_mets(self, mets):
+        games = list(Parser(mets).parse())
+        assert games == [
+            Game(
+                date='Sat, 6/8',
+                opponent='COL',
+                winlose='W',
+                urlslug='?gameId=401075687&version=mobile&teamId=21',
+                score='5-3',
+            ),
+            Game(
+                date='Sun, 6/9',
+                opponent='COL',
+                winlose='W',
+                urlslug='?gameId=401075702&version=mobile&teamId=21',
+                score='6-1',
+            ),
+            Game(
+                date='Mon, 6/10',
+                opponent='@NYY',
+                winlose='7:05 PM',
+                urlslug='?gameId=401075715&version=mobile&teamId=21',
+                score='',
+            ),
+            Game(
+                date='Tue, 6/11',
+                opponent='@NYY',
+                winlose='7:00 PM',
+                urlslug='?gameId=401075727&version=mobile&teamId=21',
+                score='',
+            ),
+        ]
+
+    def test_cubs(self, cubs):
         games = list(Parser(cubs).parse())
-        assert games is not None
+        assert games == [
+            Game(
+                date='Sat, 6/8',
+                opponent='STL',
+                winlose='W',
+                urlslug='?gameId=401075694&version=mobile&teamId=16',
+                score='9-4',
+            ),
+            Game(
+                date='Sun, 6/9',
+                opponent='STL',
+                winlose='TOP 5TH',
+                urlslug='?gameId=401075709&version=mobile&teamId=16',
+                score='1-1',
+            ),
+            Game(
+                date='Mon, 6/10',
+                opponent='@COL',
+                winlose='8:40 PM',
+                urlslug='?gameId=401075722&version=mobile&teamId=16',
+                score='',
+            ),
+            Game(
+                date='Tue, 6/11',
+                opponent='@COL',
+                winlose='8:40 PM',
+                urlslug='?gameId=401075737&version=mobile&teamId=16',
+                score='',
+            ),
+        ]
