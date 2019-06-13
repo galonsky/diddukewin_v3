@@ -1,4 +1,4 @@
-from models import Game
+from ddw.models import Game
 
 
 class TestHasValidScore:

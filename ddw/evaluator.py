@@ -1,7 +1,7 @@
-from exceptions import NoGamesFoundException
-from fetcher import ScoreFetcher
-from models import Game
-from parser import Parser
+from ddw.exceptions import NoGamesFoundException
+from ddw.fetcher import ScoreFetcher
+from ddw.models import Game
+from ddw.parser import Parser
 
 
 class Evaluator:

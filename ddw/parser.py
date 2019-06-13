@@ -1,7 +1,7 @@
 import re
 from typing import Iterator
 
-from models import Game
+from ddw.models import Game
 
 INITIAL_PATTERN = re.compile(r"teamschedule")
 DATA_PATTERN = re.compile(r"gamecast(?P<urlslug>[^']*)'>(?P<datum>[^<]*)<")

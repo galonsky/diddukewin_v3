@@ -2,9 +2,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from evaluator import Evaluator
-from exceptions import NoGamesFoundException
-from models import Game
+from ddw.evaluator import Evaluator
+from ddw.exceptions import NoGamesFoundException
+from ddw.models import Game
 
 
 class TestFindCurrentGame:
