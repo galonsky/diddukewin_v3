@@ -1,0 +1,54 @@
+#middle{
+	text-align:center;
+	margin-top:15%;
+}
+
+p{
+	font-family: Arial, sans-serif;
+}
+
+p.yes{
+	font-size:120pt;
+	font-weight: bold;
+	color: green;
+}
+
+p.no{
+	font-size:120pt;
+	font-weight: bold;
+	color: red;
+}
+
+p.notyet{
+	font-size:120pt;
+	font-weight: bold;
+	color: yellow;
+}
+
+.ie6 #social, .ie7 #social, .ie8 #social, .ie9 #social {
+    margin-left: 158px;
+}
+
+#social{
+    width: 136px;
+    margin: auto;
+}
+
+#twitter, #fb{
+    display: block;
+    border: none;
+    height: 21px;
+}
+
+#fb{
+    width: 81px;
+    margin-left: 27px;
+}
+
+.ie6 #fb, .ie7 #fb, .ie8 #fb, .ie9 #fb{
+    margin-left: 18px;
+}
+
+#twitter{
+    width: 136px;
+}

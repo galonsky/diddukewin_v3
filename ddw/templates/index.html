@@ -1,0 +1,50 @@
+<!--[if lt IE 7 ]>
+<html class="ie6"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie7"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie8"> <![endif]-->
+<!--[if IE 9 ]>
+<html class="ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html> <!--<![endif]-->
+<head>
+    <title>Did Duke Win?</title>
+    <link rel=stylesheet HREF="style.css" TYPE="text/css">
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-19863935-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+<div id='middle'>
+    <p class='{{ game_display.css_class }}'>
+        {{ game_display.result_text }}
+    </p>
+    <p>
+        <a href="{{ game_display.link }}">
+            {{ game_display.link_text }}
+        </a>
+    </p>
+    <div id='social'>
+        <p>
+            <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.diddukewin.com&amp;layout=button_count&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:85px; height:21px;" allowTransparency="true" id='fb'></iframe>
+        </p>
+        <p id='twitter'>
+            <a href="https://twitter.com/diddukewin" class="twitter-follow-button" data-show-count="false">
+                Follow @diddukewin
+            </a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </div>
+</div>
+</body>
+</html>
