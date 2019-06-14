@@ -39,3 +39,37 @@ class Game:
             return ResultType.WIN
         else:
             return ResultType.NOT_YET
+
+
+class GameDisplay:
+
+    RESULT_TO_CSS_CLASS = {
+        ResultType.WIN: "yes",
+        ResultType.LOSS: "no",
+        ResultType.NOT_YET: "notyet",
+    }
+
+    RESULT_TO_TEXT = {
+        ResultType.WIN: "YES",
+        ResultType.LOSS: "NO",
+        ResultType.NOT_YET: "NOT YET",
+    }
+
+    def __init__(self, game: Game):
+        self.game = game
+
+    @property
+    def link(self):
+        return self.game.get_link()
+
+    @property
+    def css_class(self):
+        return self.RESULT_TO_CSS_CLASS[self.game.get_result_type()]
+
+    @property
+    def result_text(self):
+        return self.RESULT_TO_TEXT[self.game.get_result_type()]
+
+    @property
+    def link_text(self):
+        return f"{self.game.winlose} {self.game.score}"
