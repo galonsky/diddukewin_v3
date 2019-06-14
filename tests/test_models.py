@@ -1,4 +1,4 @@
-from ddw.models import Game
+from ddw.models import Game, ResultType
 
 
 class TestHasValidScore:
@@ -44,4 +44,30 @@ class TestGetLink:
         assert (
             Game(date="", opponent="", winlose="", urlslug="?slug", score="").get_link()
             == "http://espn.go.com/ncb/gamecast?slug"
+        )
+
+
+class TestGetResultType:
+    def test_when_l_returns_loss(self):
+        assert (
+            Game(
+                date="", opponent="", winlose="L", urlslug="?slug", score=""
+            ).get_result_type()
+            == ResultType.LOSS
+        )
+
+    def test_when_w_returns_win(self):
+        assert (
+            Game(
+                date="", opponent="", winlose="W", urlslug="?slug", score=""
+            ).get_result_type()
+            == ResultType.WIN
+        )
+
+    def test_when_empty_returns_not_yet(self):
+        assert (
+            Game(
+                date="", opponent="", winlose="", urlslug="?slug", score=""
+            ).get_result_type()
+            == ResultType.NOT_YET
         )
