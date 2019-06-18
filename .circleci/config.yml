@@ -38,6 +38,5 @@ jobs:
             . venv/bin/activate
             pytest --junitxml=test-reports/pytest/junit.xml
 
-      - store_artifacts:
+      - store_test_results:
           path: test-reports
-          destination: test-reports
