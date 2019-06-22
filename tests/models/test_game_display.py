@@ -27,3 +27,11 @@ class TestResultText:
 class TestLinkText:
     def test_returns_winlose_and_score(self):
         assert GameDisplay(Game("", "", "W", "32-31", "")).link_text == "W 32-31"
+
+
+class TestTweetText:
+    def test_returns_result_score_and_link(self):
+        assert (
+            GameDisplay(Game("", "", "W", "32-31", "")).tweet_text
+            == "YES. 32-31 http://www.diddukewin.com"
+        )

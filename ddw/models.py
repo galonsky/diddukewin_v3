@@ -73,3 +73,7 @@ class GameDisplay:
     @property
     def link_text(self):
         return f"{self.game.winlose} {self.game.score}"
+
+    @property
+    def tweet_text(self):
+        return f"{self.result_text}. {self.game.score} http://www.diddukewin.com"
