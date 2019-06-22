@@ -2,14 +2,15 @@ import functools
 import os
 import json
 import redis
+from redis import Redis
 
 
 class RedisCache:
-    def __init__(self, r):
+    def __init__(self, r: Redis):
         self.r = r
 
     @classmethod
-    def factory(cls, r=None):
+    def factory(cls, r: Redis = None):
         if r is None:
             r = redis.from_url(os.getenv("REDIS_URL") or "redis://")
         return cls(r)
