@@ -4,6 +4,8 @@ import json
 import redis
 from redis import Redis
 
+from ddw.redis import r
+
 
 class RedisCache:
     def __init__(self, r: Redis):
@@ -25,6 +27,9 @@ class RedisCache:
             return None
         return json.loads(value_str)
 
+    def invalidate(self, key: str):
+        return self.r.delete(key)
+
     def cache_result(self, key: str, ttl_seconds: int):
         def decorator_cache(func):
             @functools.wraps(func)
@@ -41,4 +46,4 @@ class RedisCache:
         return decorator_cache
 
 
-cache = RedisCache.factory()
+cache = RedisCache.factory(r)

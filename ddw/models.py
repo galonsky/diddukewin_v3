@@ -85,10 +85,15 @@ class GameDisplay:
 class Tweet:
     DATETIME_FORMAT = "%a %b %d %X %z %Y"
 
-    def __init__(self, tweet_dict: Dict[str, str]):
-        self.text = tweet_dict["text"]
-        self.created_at = datetime.strptime(
-            tweet_dict["created_at"], self.DATETIME_FORMAT
+    def __init__(self, text: str, created_at: datetime = None):
+        self.text = text
+        self.created_at = created_at
+
+    @classmethod
+    def from_tweet_dict(cls, tweet_dict: Dict[str, str]):
+        return cls(
+            text=tweet_dict["text"],
+            created_at=datetime.strptime(tweet_dict["created_at"], cls.DATETIME_FORMAT),
         )
 
     @property
