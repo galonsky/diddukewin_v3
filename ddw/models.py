@@ -2,9 +2,11 @@ import enum
 from dataclasses import dataclass
 from datetime import datetime
 import re
+from typing import Dict
 
 VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
 ENDED_PATTERN = re.compile(r"[WL]")
+TWEET_LINK_PATTERN = re.compile(r"https?://")
 
 
 class ResultType(enum.Enum):
@@ -83,8 +85,15 @@ class GameDisplay:
 class Tweet:
     DATETIME_FORMAT = "%a %b %d %X %z %Y"
 
-    def __init__(self, tweet_dict: dict):
+    def __init__(self, tweet_dict: Dict[str, str]):
         self.text = tweet_dict["text"]
         self.created_at = datetime.strptime(
             tweet_dict["created_at"], self.DATETIME_FORMAT
         )
+
+    @property
+    def text_without_link(self):
+        link_match = TWEET_LINK_PATTERN.search(self.text)
+        if not link_match:
+            return self.text.strip()
+        return self.text[: link_match.start()].strip()
