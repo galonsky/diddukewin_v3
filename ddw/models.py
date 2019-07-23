@@ -1,5 +1,6 @@
 import enum
 from dataclasses import dataclass
+from datetime import datetime
 import re
 
 VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
@@ -77,3 +78,13 @@ class GameDisplay:
     @property
     def tweet_text(self):
         return f"{self.result_text}. {self.game.score} http://www.diddukewin.com"
+
+
+class Tweet:
+    DATETIME_FORMAT = "%a %b %d %X %z %Y"
+
+    def __init__(self, tweet_dict: dict):
+        self.text = tweet_dict["text"]
+        self.created_at = datetime.strptime(
+            tweet_dict["created_at"], self.DATETIME_FORMAT
+        )
