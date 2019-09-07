@@ -51,3 +51,9 @@ class TestCacheResult:
         assert redis_cache.cache_result("key", 30)(mock_function)() == {"foo": "bar"}
         mock_function.assert_not_called()
         r_mock.set.assert_not_called()
+
+
+class TestInvalidate:
+    def test_calls_delete(self, redis_cache, r_mock):
+        redis_cache.invalidate("foo")
+        r_mock.delete.assert_called_once_with("foo")
