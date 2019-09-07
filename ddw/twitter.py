@@ -27,7 +27,6 @@ def get_latest_tweet() -> dict:
 
 @require_lock("tweeting-lock", 30)
 def post_tweet(tweet_text: str):
-    # todo tests
     latest_tweet_dict = get_latest_tweet()
     latest_tweet = Tweet.from_tweet_dict(latest_tweet_dict)
 
