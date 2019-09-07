@@ -7,15 +7,15 @@ from ddw.twitter import post_tweet
 from ddw.uploader import upload
 
 
-TWEETING_ENABLED = bool(os.getenv("TWEETING_ENABLED"))
+def should_tweet() -> bool:
+    return bool(os.getenv("TWEETING_ENABLED"))
 
 
 def run_update():
-    # todo tests
     game = Evaluator().find_current_game()
     game_display = GameDisplay(game)
     rendered = render(game_display)
     upload(rendered)
 
-    if TWEETING_ENABLED and game.has_ended():
+    if should_tweet() and game.has_ended():
         post_tweet(game_display.tweet_text)
