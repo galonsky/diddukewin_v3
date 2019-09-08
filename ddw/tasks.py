@@ -10,7 +10,11 @@ from ddw import app
 
 SENTRY_DSN = os.environ.get("SENTRY_DSN", None)
 if SENTRY_DSN:
-    sentry_sdk.init(SENTRY_DSN, integrations=[CeleryIntegration()])
+    sentry_sdk.init(
+        SENTRY_DSN,
+        integrations=[CeleryIntegration()],
+        release=os.environ.get("HEROKU_SLUG_COMMIT", None),
+    )
 
 celery_app = celery.Celery("ddw")
 celery_app.config_from_object(celeryconfig)
