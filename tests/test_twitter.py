@@ -76,6 +76,3 @@ class TestPostTweet:
         post_tweet("foo")
         mock_cache.invalidate.assert_called_once_with("latest_tweet")
         mock_api.PostUpdate.assert_called_once_with("foo")
-
-    def test_fail(self):
-        assert False
