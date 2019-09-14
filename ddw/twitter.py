@@ -18,7 +18,7 @@ SCREEN_NAME = "diddukewin"
 MIN_HOURS_BETWEEN_TWEETS = int(os.getenv("MIN_HOURS_BETWEEN_TWEETS", 8))
 
 
-@cache.cache_result("latest_tweet", 60 * 5)
+@cache.cache_result("latest_tweet", 60 * 60)
 def get_latest_tweet() -> dict:
     statuses = api.GetUserTimeline(screen_name=SCREEN_NAME, count=1)
     status = statuses[0]
