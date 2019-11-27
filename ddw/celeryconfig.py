@@ -13,3 +13,7 @@ beat_schedule = {
         "options": {"expires": 60},
     }
 }
+
+REDBEAT_REDIS_OPTIONS = {
+    'retry_period': -1,
+}
