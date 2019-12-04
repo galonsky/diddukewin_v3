@@ -22,19 +22,19 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv .venv
+            . .venv/bin/activate
             pip install -r requirements.txt
 
       - save_cache:
           paths:
-            - ./venv
+            - ./.venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
+            . .venv/bin/activate
             pytest --junitxml=test-reports/pytest/junit.xml
 
       - store_test_results:
@@ -57,15 +57,15 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv .venv
+            . .venv/bin/activate
             pip install -r requirements.txt
             pip install mypy
 
       - run:
           name: run mypy
           command: |
-            . venv/bin/activate
+            . .venv/bin/activate
             mypy --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml ddw
 
       - store_test_results:
@@ -89,15 +89,15 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv .venv
+            . .venv/bin/activate
             pip install -r requirements.txt
             pip install black
 
       - run:
           name: run black
           command: |
-            . venv/bin/activate
+            . .venv/bin/activate
             black --check .
 
 workflows:
