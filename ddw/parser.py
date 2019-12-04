@@ -12,6 +12,8 @@ DATA_GROUPS = ("date", "opponent", "winlose", "score")
 class Parser:
     def parse(self, body) -> Iterator[Game]:
         match = INITIAL_PATTERN.search(body)
+        if not match:
+            raise ValueError("cannot find team schedule")
         start = match.start()
         matches = DATA_PATTERN.finditer(body, pos=start)
         while True:

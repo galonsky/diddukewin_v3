@@ -14,6 +14,4 @@ beat_schedule = {
     }
 }
 
-REDBEAT_REDIS_OPTIONS = {
-    'retry_period': -1,
-}
+REDBEAT_REDIS_OPTIONS = {"retry_period": -1}
