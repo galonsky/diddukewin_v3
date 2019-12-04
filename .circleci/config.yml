@@ -66,10 +66,39 @@ jobs:
           name: run mypy
           command: |
             . venv/bin/activate
-            mypy ddw --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml
+            mypy --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml ddw
 
       - store_test_results:
           path: test-reports
+
+  black:
+    docker:
+      - image: circleci/python:3.7.3
+
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install black
+
+      - run:
+          name: run black
+          command: |
+            . venv/bin/activate
+            black --check .
 
 workflows:
   version: 2
@@ -77,3 +106,4 @@ workflows:
     jobs:
       - unit-tests
       - mypy
+      - black
