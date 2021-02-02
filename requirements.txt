@@ -5,9 +5,9 @@ pre-commit==1.17.0
 Jinja2==2.10.3
 htmlmin==0.1.12
 boto3==1.10.15
-celery==4.3.0
+celery==5.0.5
 redis==3.2.1
-celery-redbeat==0.13.0
+celery-redbeat==2.0.0
 sentry-sdk==0.11.2
 python-twitter==3.5
 pytest-mock==1.10.4
