@@ -4,6 +4,7 @@ import json
 import redis
 from redis import Redis
 
+from ddw.config import use_redis
 from ddw.redis import r
 
 
@@ -18,10 +19,14 @@ class RedisCache:
         return cls(r)
 
     def set_cache(self, key: str, value: dict, ttl_seconds: int = None):
+        if not use_redis():
+            return
         serialized = json.dumps(value, sort_keys=True)
         self.r.set(name=key, value=serialized, ex=ttl_seconds)
 
     def get_cache(self, key: str):
+        if not use_redis():
+            return None
         value_str = self.r.get(name=key)
         if value_str is None:
             return None

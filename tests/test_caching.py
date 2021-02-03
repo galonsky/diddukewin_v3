@@ -5,6 +5,11 @@ import pytest
 from ddw import caching
 
 
+@pytest.fixture(autouse=True)
+def enable_redis(mocker):
+    return mocker.patch("ddw.caching.use_redis", return_value=True)
+
+
 @pytest.fixture
 def r_mock():
     return MagicMock()

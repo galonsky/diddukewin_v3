@@ -1,15 +1,12 @@
 import os
 import requests
 
+from ddw.config import should_tweet
 from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
 from ddw.twitter import post_tweet
 from ddw.uploader import upload
-
-
-def should_tweet() -> bool:
-    return bool(os.getenv("TWEETING_ENABLED"))
 
 
 def snitch():
