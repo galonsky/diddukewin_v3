@@ -15,7 +15,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}
+            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v3-dependencies-
 
@@ -24,7 +24,7 @@ jobs:
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
 
       - save_cache:
           paths:
@@ -50,7 +50,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}
+            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v3-dependencies-
 
@@ -59,7 +59,7 @@ jobs:
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
             pip install mypy
 
       - run:
@@ -82,7 +82,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}
+            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v3-dependencies-
 
@@ -91,7 +91,7 @@ jobs:
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install -r requirements.txt
+            pip install -r requirements-dev.txt
             pip install black
 
       - run:
