@@ -1,21 +1,21 @@
 import functools
-import os
 import json
-import redis
-from redis import Redis
+from typing import TYPE_CHECKING
 
 from ddw.config import use_redis
 from ddw.redis import r
 
 
+if TYPE_CHECKING:
+    from redis import Redis
+
+
 class RedisCache:
-    def __init__(self, r: Redis):
+    def __init__(self, r: "Redis"):
         self.r = r
 
     @classmethod
-    def factory(cls, r: Redis = None):
-        if r is None:
-            r = redis.from_url(os.getenv("REDIS_URL") or "redis://")
+    def factory(cls, r: "Redis"):
         return cls(r)
 
     def set_cache(self, key: str, value: dict, ttl_seconds: int = None):
