@@ -13,7 +13,6 @@ def mock_api(mocker):
 
 
 class TestGetLatestTweet:
-
     def test_grabs_first(self, mock_api):
         status = MagicMock()
         status.text = "foo"
@@ -25,7 +24,6 @@ class TestGetLatestTweet:
 
 
 class TestPostTweet:
-
     @pytest.fixture
     def mock_get_latest_tweet(self, mocker):
         return mocker.patch("ddw.twitter.get_latest_tweet")
@@ -54,9 +52,7 @@ class TestPostTweet:
         post_tweet("foo")
         mock_api.PostUpdate.assert_not_called()
 
-    def test_tweets(
-        self, mock_get_latest_tweet, mock_from_tweet_dict, mock_api,
-    ):
+    def test_tweets(self, mock_get_latest_tweet, mock_from_tweet_dict, mock_api):
         mock_from_tweet_dict.return_value = Tweet(
             "bar",
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=9),
