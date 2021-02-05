@@ -1,7 +1,6 @@
-import os
 import requests
 
-from ddw.config import should_tweet
+from ddw.config import should_tweet, get_config_value
 from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
@@ -10,18 +9,20 @@ from ddw.uploader import upload
 import logging
 
 
-if os.getenv("SENTRY_DSN"):
+if get_config_value("SENTRY_DSN"):
     import sentry_sdk
     from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
-    sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), integrations=[AwsLambdaIntegration()])
+    sentry_sdk.init(
+        dsn=get_config_value("SENTRY_DSN"), integrations=[AwsLambdaIntegration()]
+    )
 
 
 logger = logging.getLogger()
 
 
 def snitch():
-    url = os.getenv("SNITCH_URL")
+    url = get_config_value("SNITCH_URL")
     if url:
         requests.get(url)
 

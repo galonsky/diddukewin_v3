@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 
 import twitter
 
+from ddw.config import get_config_value
 from ddw.models import Tweet
 import logging
 
@@ -10,10 +11,10 @@ import logging
 logger = logging.getLogger()
 
 api = twitter.Api(
-    consumer_key=os.getenv("TWITTER_CONSUMER_KEY"),
-    consumer_secret=os.getenv("TWITTER_CONSUMER_SECRET"),
-    access_token_key=os.getenv("TWITTER_ACCESS_TOKEN_KEY"),
-    access_token_secret=os.getenv("TWITTER_ACCESS_TOKEN_SECRET"),
+    consumer_key=get_config_value("TWITTER_CONSUMER_KEY"),
+    consumer_secret=get_config_value("TWITTER_CONSUMER_SECRET"),
+    access_token_key=get_config_value("TWITTER_ACCESS_TOKEN_KEY"),
+    access_token_secret=get_config_value("TWITTER_ACCESS_TOKEN_SECRET"),
 )
 
 SCREEN_NAME = "diddukewin"
