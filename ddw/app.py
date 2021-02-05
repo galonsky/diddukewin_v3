@@ -1,3 +1,9 @@
+from aws_xray_sdk.core import patch_all
+
+
+patch_all()
+
+
 import requests
 
 from ddw.config import should_tweet, get_config_value
@@ -7,10 +13,6 @@ from ddw.renderer import render
 from ddw.twitter import post_tweet
 from ddw.uploader import upload
 import logging
-from aws_xray_sdk.core import patch_all
-
-
-patch_all()
 
 
 if get_config_value("SENTRY_DSN"):
