@@ -23,7 +23,7 @@ Resources:
         DDWSchedule:
           Type: Schedule
           Properties:
-            Schedule: cron(0/15 * * * ? *)
+            Schedule: cron(0/5 * * * ? *)
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
