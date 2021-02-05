@@ -4,4 +4,4 @@ htmlmin==0.1.12
 boto3==1.17.2
 python-twitter==3.5
 sentry-sdk==0.19.5
-aws-xray-sdk=2.6.0
+aws-xray-sdk==2.6.0
