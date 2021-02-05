@@ -10,6 +10,13 @@ from ddw.uploader import upload
 import logging
 
 
+if os.getenv("SENTRY_DSN"):
+    import sentry_sdk
+    from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+
+    sentry_sdk.init(dsn=os.getenv("SENTRY_DSN"), integrations=[AwsLambdaIntegration()])
+
+
 logger = logging.getLogger()
 
 

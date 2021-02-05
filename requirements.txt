@@ -3,3 +3,4 @@ Jinja2==2.10.3
 htmlmin==0.1.12
 boto3==1.10.15
 python-twitter==3.5
+sentry-sdk==0.19.5
