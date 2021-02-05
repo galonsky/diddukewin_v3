@@ -1,6 +1,10 @@
 import boto3
 import hashlib
 from botocore.exceptions import ClientError
+import logging
+
+
+logger = logging.getLogger()
 
 BUCKET_NAME = "diddukewin.com"
 KEY = "index.html"
@@ -29,7 +33,8 @@ def should_upload_new(content: str, bucket: str, key: str) -> bool:
 
 def upload(content: str, bucket: str = BUCKET_NAME, key: str = KEY):
     if not should_upload_new(content, bucket, key):
+        logger.info("Content hasn't changed, skipping upload.")
         return
-    return client.put_object(
-        Bucket=bucket, Key=key, Body=content, ContentType="text/html"
-    )
+    logger.info("Uploading new file")
+    client.put_object(Bucket=bucket, Key=key, Body=content, ContentType="text/html")
+    logger.info("Upload complete")

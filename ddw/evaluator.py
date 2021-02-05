@@ -2,6 +2,10 @@ from ddw.exceptions import NoGamesFoundException
 from ddw.fetcher import ScoreFetcher
 from ddw.models import Game
 from ddw.parser import Parser
+import logging
+
+
+logger = logging.getLogger()
 
 
 class Evaluator:
@@ -13,6 +17,7 @@ class Evaluator:
 
     def find_current_game(self) -> Game:
         body = self.fetcher.fetch()
+        logger.info("Fetched content")
         games = list(self.parser.parse(body))
         if not games:
             raise NoGamesFoundException()
