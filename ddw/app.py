@@ -27,12 +27,6 @@ if get_config_value("SENTRY_DSN"):
 logger = logging.getLogger()
 
 
-def snitch():
-    url = get_config_value("SNITCH_URL")
-    if url:
-        requests.get(url)
-
-
 def run_update():
     game = Evaluator().find_current_game()
     logger.info(f"Found current game: {game}")
@@ -44,8 +38,6 @@ def run_update():
         post_tweet(game_display.tweet_text)
     else:
         logger.info("Not tweeting since disabled or game not ended")
-
-    snitch()
 
 
 def lambda_handler(event, context):
