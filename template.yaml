@@ -23,6 +23,7 @@ Resources:
       Environment:
         Variables:
           TWEETING_ENABLED: 1
+          SENTRY_DSN: https://690af453bd76419db39bfd02823093da@o150169.ingest.sentry.io/1484321
       Events:
         DDWSchedule:
           Type: Schedule

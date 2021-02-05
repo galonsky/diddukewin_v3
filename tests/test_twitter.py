@@ -9,17 +9,18 @@ from ddw.twitter import get_latest_tweet, post_tweet
 
 @pytest.fixture
 def mock_api(mocker):
-    return mocker.patch("ddw.twitter.api")
+    return mocker.patch("ddw.twitter.twitter.Api")
 
 
 class TestGetLatestTweet:
-    def test_grabs_first(self, mock_api):
+    def test_grabs_first(self):
         status = MagicMock()
         status.text = "foo"
         status.created_at = "Sun Mar 31 23:08:43 +0000 2019"
+        mock_api = MagicMock()
         mock_api.GetUserTimeline.return_value = [status]
 
-        latest = get_latest_tweet()
+        latest = get_latest_tweet(mock_api)
         assert latest == {"text": "foo", "created_at": "Sun Mar 31 23:08:43 +0000 2019"}
 
 
@@ -58,4 +59,4 @@ class TestPostTweet:
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=9),
         )
         post_tweet("foo")
-        mock_api.PostUpdate.assert_called_once_with("foo")
+        mock_api().PostUpdate.assert_called_once_with("foo")
