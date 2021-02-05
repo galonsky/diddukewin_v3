@@ -1,9 +1,13 @@
 import os
+from time import time
 from typing import Optional
 
 import boto3
 
 client = boto3.client("ssm")
+
+
+CONFIG_TTL_SECONDS = 60
 
 
 def should_tweet() -> bool:
@@ -13,9 +17,12 @@ def should_tweet() -> bool:
 class SSMConfig:
     def __init__(self):
         self._config = None
+        self._last_fetched = None
 
     def get_config(self, ssm_parameter_path="/ddw") -> dict:
-        if self._config:
+        if self._config and (
+            self._last_fetched and (time() - self._last_fetched) < CONFIG_TTL_SECONDS
+        ):
             return self._config
         # Get all parameters for this app
         param_details = client.get_parameters_by_path(
@@ -29,6 +36,7 @@ class SSMConfig:
                 key = param_path_array[-1]
                 value = param.get("Value")
                 self._config[key] = value
+            self._last_fetched = time()
             return self._config
         return {}
 
