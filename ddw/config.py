@@ -4,7 +4,7 @@ from typing import Optional
 
 import boto3
 
-client = boto3.client("ssm")
+client = boto3.client("ssm", region_name="us-east-1")
 
 
 CONFIG_TTL_SECONDS = 60

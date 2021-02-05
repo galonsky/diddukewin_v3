@@ -9,7 +9,7 @@ logger = logging.getLogger()
 BUCKET_NAME = "diddukewin.com"
 KEY = "index.html"
 
-client = boto3.client("s3")
+client = boto3.client("s3", region_name="us-east-1")
 
 
 def head_object(bucket: str, key: str) -> dict:
