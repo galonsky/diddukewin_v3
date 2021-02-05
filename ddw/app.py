@@ -25,3 +25,8 @@ def run_update():
         post_tweet(game_display.tweet_text)
 
     snitch()
+
+
+def lambda_handler(event, context):
+    run_update()
+    return {"success": True}
