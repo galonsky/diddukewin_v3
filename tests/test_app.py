@@ -20,7 +20,7 @@ class TestRunUpdate:
 
     @pytest.fixture
     def mock_post_tweet(self, mocker):
-        return mocker.patch("ddw.app.post_tweet")
+        return mocker.patch("ddw.app.tweeter.post_tweet")
 
     @pytest.fixture
     def mock_should_tweet(self, mocker):
