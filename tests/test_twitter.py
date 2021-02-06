@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from ddw.models import Tweet
-from ddw.twitter import get_latest_tweet, post_tweet
+from ddw.twitter import Tweeter
 
 
 @pytest.fixture
@@ -20,14 +20,14 @@ class TestGetLatestTweet:
         mock_api = MagicMock()
         mock_api.GetUserTimeline.return_value = [status]
 
-        latest = get_latest_tweet(mock_api)
+        latest = Tweeter(mock_api).get_latest_tweet()
         assert latest == {"text": "foo", "created_at": "Sun Mar 31 23:08:43 +0000 2019"}
 
 
 class TestPostTweet:
     @pytest.fixture
     def mock_get_latest_tweet(self, mocker):
-        return mocker.patch("ddw.twitter.get_latest_tweet")
+        return mocker.patch.object(Tweeter, "get_latest_tweet")
 
     @pytest.fixture
     def mock_from_tweet_dict(self, mocker):
@@ -40,7 +40,7 @@ class TestPostTweet:
             "bar",
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1),
         )
-        post_tweet("foo")
+        Tweeter(mock_api).post_tweet("foo")
         mock_api.PostUpdate.assert_not_called()
 
     def test_same_text_without_link_doesnt_post(
@@ -50,7 +50,7 @@ class TestPostTweet:
             "foo",
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=9),
         )
-        post_tweet("foo")
+        Tweeter(mock_api).post_tweet("foo")
         mock_api.PostUpdate.assert_not_called()
 
     def test_tweets(self, mock_get_latest_tweet, mock_from_tweet_dict, mock_api):
@@ -58,5 +58,5 @@ class TestPostTweet:
             "bar",
             datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=9),
         )
-        post_tweet("foo")
-        mock_api().PostUpdate.assert_called_once_with("foo")
+        Tweeter(mock_api).post_tweet("foo")
+        mock_api.PostUpdate.assert_called_once_with("foo")

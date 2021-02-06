@@ -2,6 +2,7 @@ import os
 
 from aws_xray_sdk.core import patch_all
 
+from ddw.twitter import tweeter
 
 patch_all()
 
@@ -10,7 +11,6 @@ from ddw.config import should_tweet, ssm_config
 from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
-from ddw.twitter import post_tweet
 from ddw.uploader import upload
 import logging
 
@@ -33,7 +33,7 @@ def run_update():
     upload(rendered)
 
     if should_tweet() and game.has_ended():
-        post_tweet(game_display.tweet_text)
+        tweeter.post_tweet(game_display.tweet_text)
     else:
         logger.info("Not tweeting since disabled or game not ended")
 
@@ -41,6 +41,7 @@ def run_update():
 def lambda_handler(event, context):
     logger.setLevel(logging.INFO)
     if event.get("bust"):
+        tweeter.bust()
         ssm_config.bust_cache()
 
     run_update()
