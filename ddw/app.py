@@ -6,7 +6,7 @@ from aws_xray_sdk.core import patch_all
 patch_all()
 
 
-from ddw.config import should_tweet
+from ddw.config import should_tweet, ssm_config
 from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
@@ -40,6 +40,8 @@ def run_update():
 
 def lambda_handler(event, context):
     logger.setLevel(logging.INFO)
+    if event.get("bust"):
+        ssm_config.bust_cache()
 
     run_update()
     return {"success": True}
