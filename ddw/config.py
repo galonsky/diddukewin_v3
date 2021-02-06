@@ -2,10 +2,7 @@ import os
 from time import time
 from typing import Optional
 
-import boto3
-
-client = boto3.client("ssm", region_name="us-east-1")
-
+from ddw.aws import ssm
 
 CONFIG_TTL_SECONDS = 60
 
@@ -25,7 +22,7 @@ class SSMConfig:
         ):
             return self._config
         # Get all parameters for this app
-        param_details = client.get_parameters_by_path(
+        param_details = ssm.get_parameters_by_path(
             Path=ssm_parameter_path, Recursive=False, WithDecryption=True
         )
 

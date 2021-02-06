@@ -6,7 +6,7 @@ from ddw.uploader import head_object, md5_content, should_upload_new, upload
 
 @pytest.fixture
 def client_mock(mocker):
-    return mocker.patch("ddw.uploader.client")
+    return mocker.patch("ddw.uploader.s3")
 
 
 class TestHeadObject:
