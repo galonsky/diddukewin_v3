@@ -27,14 +27,12 @@ def create_api():
 class Tweeter:
     def __init__(self, api=None):
         self._last_tweet_dict = None
-        if not api:
-            api = create_api()
         self.api = api
 
     def get_latest_tweet(self) -> dict:
         if self._last_tweet_dict:
             return self._last_tweet_dict
-        statuses = self.api.GetUserTimeline(screen_name=SCREEN_NAME, count=1)
+        statuses = self.get_api().GetUserTimeline(screen_name=SCREEN_NAME, count=1)
         status = statuses[0]
         t_dict = {"text": status.text, "created_at": status.created_at}
         self._last_tweet_dict = t_dict
@@ -42,7 +40,12 @@ class Tweeter:
 
     def bust(self):
         self._last_tweet_dict = None
-        self.api = create_api()
+        self.api = None
+
+    def get_api(self):
+        if not self.api:
+            self.api = create_api()
+        return self.api
 
     def post_tweet(self, tweet_text: str):
         latest_tweet_dict = self.get_latest_tweet()
@@ -62,7 +65,7 @@ class Tweeter:
             logger.info("Same content, not tweeting.")
             return
 
-        self.api.PostUpdate(tweet_text)
+        self.get_api().PostUpdate(tweet_text)
         self.bust()
         logger.info(f"Posted tweet: {tweet_text}")
 
