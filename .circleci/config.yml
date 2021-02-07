@@ -107,8 +107,7 @@ jobs:
       - image: circleci/python:3.8.7
     working_directory: ~/repo
     steps:
-      - attach_workspace:
-          at: ~/
+      - checkout
       - sam/install
       - sam/build:
           template: template.yaml
