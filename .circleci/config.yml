@@ -109,9 +109,11 @@ jobs:
     steps:
       - checkout
       - sam/install
-      - build:
+      - run:
+          name: sam build
           command: sam build
-      - deploy:
+      - run:
+          name: sam deploy
           command: sam deploy --stack-name ddw --capabilities CAPABILITY_IAM --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg --s3-prefix ddw
 
 workflows:
