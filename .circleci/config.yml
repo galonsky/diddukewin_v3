@@ -109,15 +109,10 @@ jobs:
     steps:
       - checkout
       - sam/install
-      - sam/build:
-          template: template.yaml
-          s3-bucket: aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg
-          validate: false
-          use-container: false
-          output-template-file: template-deploy.yaml
-      - sam/deploy:
-          stack-name: ddw
-          template: template-deploy.yaml
+      - build:
+          command: sam build
+      - deploy:
+          command: sam deploy --stack-name ddw --capabilities CAPABILITY_IAM --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg --s3-prefix ddw
 
 workflows:
   version: 2
