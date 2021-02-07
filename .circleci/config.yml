@@ -113,6 +113,7 @@ jobs:
       - sam/build:
           template: template.yaml
           s3-bucket: aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg
+          validate: false
       - sam/deploy:
           stack-name: ddw
 
