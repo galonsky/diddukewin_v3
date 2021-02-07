@@ -2,7 +2,9 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
+orbs:
+  sam: circleci/aws-sam-serverless@2.1.0
 jobs:
   build:
     docker:
@@ -100,6 +102,20 @@ jobs:
             . .venv/bin/activate
             black --check .
 
+  deploy:
+    docker:
+      - image: circleci/python:3.8.7
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/
+      - sam/install
+      - sam/build:
+          template: template.yaml
+          s3-bucket: aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg
+      - sam/deploy:
+          stack-name: ddw
+
 workflows:
   version: 2
   tests:
@@ -114,3 +130,8 @@ workflows:
       - black:
           requires:
             - build
+      - deploy:
+          requires:
+            - unit-tests
+            - mypy
+            - black
