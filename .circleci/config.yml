@@ -115,9 +115,10 @@ jobs:
           s3-bucket: aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg
           validate: false
           use-container: false
+          output-template-file: template-deploy.yaml
       - sam/deploy:
           stack-name: ddw
-          template: template.yaml
+          template: template-deploy.yaml
 
 workflows:
   version: 2
