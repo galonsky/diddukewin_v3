@@ -32,9 +32,9 @@ jobs:
           key: v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
 
       - persist_to_workspace:
-          root: ~/repo
+          root: ~/
           paths:
-            - *
+            - repo
 
   unit-tests:
     docker:
