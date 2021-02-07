@@ -117,6 +117,7 @@ jobs:
           use-container: false
       - sam/deploy:
           stack-name: ddw
+          template: template.yaml
 
 workflows:
   version: 2
