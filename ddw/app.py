@@ -1,10 +1,12 @@
 import os
 
-from aws_xray_sdk.core import patch_all
-
 from ddw.twitter import tweeter
 
-patch_all()
+
+if os.getenv("XRAY_ENABLED"):
+    from aws_xray_sdk.core import patch_all
+
+    patch_all()
 
 
 from ddw.config import should_tweet, ssm_config
