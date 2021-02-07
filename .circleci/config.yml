@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  unit-tests:
+  build:
     docker:
       - image: circleci/python:3.8.7
 
@@ -31,6 +31,20 @@ jobs:
             - ./.venv
           key: v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
 
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - *
+
+  unit-tests:
+    docker:
+      - image: circleci/python:3.8.7
+
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
       - run:
           name: run tests
           command: |
@@ -45,21 +59,14 @@ jobs:
 
     working_directory: ~/repo
     steps:
-      - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+      - attach_workspace:
+          at: ~/repo
 
       - run:
           name: install dependencies
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install -r requirements-dev.txt
             pip install mypy
 
       - run:
@@ -77,21 +84,14 @@ jobs:
 
     working_directory: ~/repo
     steps:
-      - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements-dev.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+      - attach_workspace:
+          at: ~/repo
 
       - run:
           name: install dependencies
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install -r requirements-dev.txt
             pip install black
 
       - run:
@@ -104,6 +104,13 @@ workflows:
   version: 2
   tests:
     jobs:
-      - unit-tests
-      - mypy
-      - black
+      - build
+      - unit-tests:
+          requires:
+            - build
+      - mypy:
+          requires:
+            - build
+      - black:
+          requires:
+            - build
