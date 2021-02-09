@@ -29,7 +29,7 @@ Resources:
         DDWSchedule:
           Type: Schedule
           Properties:
-            Schedule: cron(0/5 * * * ? *)
+            Schedule: cron(0/5 16-23,0-6 * * ? *)  # roughly 11am-1am eastern
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
