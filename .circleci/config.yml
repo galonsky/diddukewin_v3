@@ -135,3 +135,6 @@ workflows:
             - unit-tests
             - mypy
             - black
+          filters:
+            branches:
+              only: master
