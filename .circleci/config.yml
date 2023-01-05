@@ -112,6 +112,9 @@ jobs:
       - checkout
       - sam/install
       - run:
+          name: reinstall with crypto patch
+          command: pip install aws-sam-cli --force-reinstall "cryptography==38.0.4"
+      - run:
           name: sam build
           command: sam build
       - run:
