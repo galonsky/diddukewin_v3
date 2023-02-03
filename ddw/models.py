@@ -45,7 +45,6 @@ class Game:
 
 
 class GameDisplay:
-
     RESULT_TO_CSS_CLASS = {
         ResultType.WIN: "yes",
         ResultType.LOSS: "no",
@@ -85,7 +84,7 @@ class GameDisplay:
 class Tweet:
     DATETIME_FORMAT = "%a %b %d %X %z %Y"
 
-    def __init__(self, text: str, created_at: datetime = None):
+    def __init__(self, text: str, created_at: datetime):
         self.text = text
         self.created_at = created_at
 
@@ -112,8 +111,10 @@ class Status:
     @classmethod
     def from_status_dict(cls, status_dict: dict) -> "Status":
         return cls(
-            created_at=datetime.fromisoformat(status_dict['created_at'][0:-1] + "+00:00"),
-            content=re.sub('<[^<]+?>', '', status_dict["content"]),  # strip html
+            created_at=datetime.fromisoformat(
+                status_dict["created_at"][0:-1] + "+00:00"
+            ),
+            content=re.sub("<[^<]+?>", "", status_dict["content"]),  # strip html
         )
 
     @property
