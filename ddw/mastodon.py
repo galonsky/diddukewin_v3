@@ -20,7 +20,7 @@ logger = logging.getLogger()
 
 
 class Tooter:
-    def __init__(self):
+    def __init__(self) -> None:
         self._access_token: Optional[str] = None
         self._last_status: Optional[Status] = None
 

@@ -2,7 +2,7 @@ import enum
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 import re
-from typing import Dict
+from typing import Dict, Optional
 
 VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
 ENDED_PATTERN = re.compile(r"[WL]")
@@ -84,7 +84,7 @@ class GameDisplay:
 class Tweet:
     DATETIME_FORMAT = "%a %b %d %X %z %Y"
 
-    def __init__(self, text: str, created_at: datetime):
+    def __init__(self, text: str, created_at: Optional[datetime] = None):
         self.text = text
         self.created_at = created_at
 
