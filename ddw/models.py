@@ -1,12 +1,12 @@
 import enum
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import re
-from typing import Dict
+from typing import Dict, Optional
 
 VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
 ENDED_PATTERN = re.compile(r"[WL]")
-TWEET_LINK_PATTERN = re.compile(r"https?://")
+LINK_PATTERN = re.compile(r"https?://")
 
 
 class ResultType(enum.Enum):
@@ -45,7 +45,6 @@ class Game:
 
 
 class GameDisplay:
-
     RESULT_TO_CSS_CLASS = {
         ResultType.WIN: "yes",
         ResultType.LOSS: "no",
@@ -85,7 +84,7 @@ class GameDisplay:
 class Tweet:
     DATETIME_FORMAT = "%a %b %d %X %z %Y"
 
-    def __init__(self, text: str, created_at: datetime = None):
+    def __init__(self, text: str, created_at: Optional[datetime] = None):
         self.text = text
         self.created_at = created_at
 
@@ -98,7 +97,34 @@ class Tweet:
 
     @property
     def text_without_link(self):
-        link_match = TWEET_LINK_PATTERN.search(self.text)
+        link_match = LINK_PATTERN.search(self.text)
         if not link_match:
             return self.text.strip()
         return self.text[: link_match.start()].strip()
+
+
+@dataclass
+class Status:
+    created_at: datetime
+    content: str
+
+    @classmethod
+    def from_status_dict(cls, status_dict: dict) -> "Status":
+        return cls(
+            created_at=datetime.fromisoformat(
+                status_dict["created_at"][0:-1] + "+00:00"
+            ),
+            content=re.sub("<[^<]+?>", "", status_dict["content"]),  # strip html
+        )
+
+    @property
+    def text_without_link(self):
+        link_match = LINK_PATTERN.search(self.content)
+        if not link_match:
+            return self.content.strip()
+        return self.content[: link_match.start()].strip()
+
+    @property
+    def hours_ago(self) -> float:
+        now = datetime.now(timezone.utc)
+        return (now - self.created_at) / timedelta(hours=1)
