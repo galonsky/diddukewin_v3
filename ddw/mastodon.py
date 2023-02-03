@@ -68,7 +68,7 @@ class Tooter:
 
         requests.post(POST_STATUS_URL, data=data, headers=headers)
         self._last_status = None
-        logger.info(f"Posted tweet: {text}")
+        logger.info(f"Posted toot: {text}")
 
 
 tooter = Tooter()
