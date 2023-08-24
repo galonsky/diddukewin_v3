@@ -3,7 +3,7 @@ import logging
 from ddw.evaluator import IEvaluator
 from ddw.exceptions import NoGamesFoundException
 from ddw.data.espn.fetcher import ScoreFetcher
-from ddw.models import Game
+from ddw.data.espn.models import ESPNGame
 from ddw.data.espn.parser import Parser
 
 
@@ -17,7 +17,7 @@ class ESPNEvaluator(IEvaluator):
         self.fetcher = fetcher
         self.parser = parser
 
-    def find_current_game(self) -> Game:
+    def find_current_game(self) -> ESPNGame:
         body = self.fetcher.fetch()
         logger.info("Fetched content")
         games = list(self.parser.parse(body))

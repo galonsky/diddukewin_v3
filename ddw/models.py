@@ -1,4 +1,5 @@
 import enum
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 import re
@@ -15,33 +16,22 @@ class ResultType(enum.Enum):
     NOT_YET = enum.auto()
 
 
-@dataclass
-class Game:
-    date: str
-    opponent: str
-    winlose: str
-    score: str
-    urlslug: str
+class IGame(ABC):
+    @abstractmethod
+    def has_ended(self) -> bool:
+        ...
 
-    def has_valid_score(self) -> bool:
-        return bool(VALID_SCORE_PATTERN.search(self.score))
+    @abstractmethod
+    def get_link(self) -> str:
+        ...
 
-    def has_ended(self):
-        return bool(ENDED_PATTERN.search(self.winlose))
+    @abstractmethod
+    def get_result_type(self) -> ResultType:
+        ...
 
-    def get_link(self):
-        if self.has_ended():
-            return "http://espn.go.com/ncb/recap{}".format(self.urlslug)
-        else:
-            return "http://espn.go.com/ncb/gamecast{}".format(self.urlslug)
-
-    def get_result_type(self):
-        if self.winlose == "L":
-            return ResultType.LOSS
-        elif self.winlose == "W":
-            return ResultType.WIN
-        else:
-            return ResultType.NOT_YET
+    @abstractmethod
+    def get_score(self) -> str:
+        ...
 
 
 class GameDisplay:
@@ -57,7 +47,13 @@ class GameDisplay:
         ResultType.NOT_YET: "NOT YET",
     }
 
-    def __init__(self, game: Game):
+    RESULT_TO_WINLOSS = {
+        ResultType.WIN: "W",
+        ResultType.LOSS: "L",
+        ResultType.NOT_YET: "",
+    }
+
+    def __init__(self, game: IGame):
         self.game = game
 
     @property
@@ -74,11 +70,11 @@ class GameDisplay:
 
     @property
     def link_text(self):
-        return f"{self.game.winlose} {self.game.score}"
+        return f"{self.RESULT_TO_WINLOSS[self.game.get_result_type()]} {self.game.get_score()}"
 
     @property
     def tweet_text(self):
-        return f"{self.result_text}. {self.game.score} http://www.diddukewin.com"
+        return f"{self.result_text}. {self.game.get_score()} http://www.diddukewin.com"
 
 
 class Tweet:

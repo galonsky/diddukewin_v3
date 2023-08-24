@@ -2,7 +2,7 @@ import pytest
 
 from ddw.app import run_update
 from ddw.data.espn.evaluator import ESPNEvaluator
-from ddw.models import Game
+from ddw.data.espn.models import ESPNGame
 
 
 class TestRunUpdate:
@@ -47,7 +47,7 @@ class TestRunUpdate:
         mock_should_tweet,
     ):
         mock_should_tweet.return_value = True
-        mock_evaluator.return_value = Game("", "", "asdf", "32-31", "")
+        mock_evaluator.return_value = ESPNGame("", "", "asdf", "32-31", "")
         run_update()
         mock_post_tweet.assert_not_called()
 
@@ -60,6 +60,6 @@ class TestRunUpdate:
         mock_should_tweet,
     ):
         mock_should_tweet.return_value = True
-        mock_evaluator.return_value = Game("", "", "W", "32-31", "")
+        mock_evaluator.return_value = ESPNGame("", "", "W", "32-31", "")
         run_update()
         mock_post_tweet.assert_called_once_with("YES. 32-31 http://www.diddukewin.com")
