@@ -8,7 +8,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/python:3.8.7
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -17,10 +17,10 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
+            - v4-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
               "requirements-dev.txt" }}
             # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+            - v4-dependencies-
 
       - run:
           name: install dependencies
@@ -32,7 +32,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
+          key: v4-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
             "requirements-dev.txt" }}
 
       - persist_to_workspace:
@@ -42,7 +42,7 @@ jobs:
 
   unit-tests:
     docker:
-      - image: circleci/python:3.8.7
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -59,7 +59,7 @@ jobs:
           path: test-reports
   mypy:
     docker:
-      - image: circleci/python:3.8.7
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -71,7 +71,7 @@ jobs:
           command: |
             python3 -m venv .venv
             . .venv/bin/activate
-            pip install "mypy==0.910" "types-requests==2.26.0"
+            pip install "mypy==1.5.1" "types-requests==2.31.0"
 
       - run:
           name: run mypy
@@ -84,7 +84,7 @@ jobs:
 
   black:
     docker:
-      - image: circleci/python:3.8.7
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -106,7 +106,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/python:3.8.7
+      - image: cimg/python:3.11.4
     working_directory: ~/repo
     steps:
       - checkout

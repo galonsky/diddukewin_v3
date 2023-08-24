@@ -1,6 +1,6 @@
 -r requirements.txt
 
-ipython==8.8.0
+ipython==8.13.2
 pytest==7.4.0
 pre-commit==2.9.2
 pytest-mock==1.10.4
