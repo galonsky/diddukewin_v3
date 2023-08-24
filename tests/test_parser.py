@@ -1,7 +1,7 @@
 import pytest
 
 from ddw.models import Game
-from ddw.parser import Parser
+from ddw.data.espn.parser import Parser
 
 
 class TestParse:

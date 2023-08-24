@@ -11,7 +11,7 @@ if os.getenv("XRAY_ENABLED"):
 
 
 from ddw.config import should_tweet, ssm_config, should_toot
-from ddw.evaluator import Evaluator
+from ddw.data.espn.evaluator import ESPNEvaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
 from ddw.uploader import upload
@@ -29,7 +29,7 @@ logger = logging.getLogger()
 
 
 def run_update():
-    game = Evaluator().find_current_game()
+    game = ESPNEvaluator().find_current_game()
     logger.info(f"Found current game: {game}")
     game_display = GameDisplay(game)
     rendered = render(game_display)
