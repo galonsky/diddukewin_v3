@@ -109,8 +109,7 @@ jobs:
     resource_class: arm.medium
     working_directory: ~/repo
     steps:
-      - setup_remote_docker:
-          version: 20.10.11
+      - setup_remote_docker
       - attach_workspace:
           at: ~/
       - run: docker buildx build --push --platform linux/arm/v7,linux/arm64/v8 --tag galonsky/diddukewin:latest .
