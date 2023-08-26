@@ -21,7 +21,7 @@ class APIBasketballFetcher:
         querystring = {"season": get_season(datetime.now()), "team": str(TEAM_ID)}
 
         headers = {
-            "X-RapidAPI-Key": os.getenv("API_BASKETBALL_KEY"),
+            "X-RapidAPI-Key": os.getenv("API_BASKETBALL_KEY", ""),
             "X-RapidAPI-Host": API_BASKETBALL_HOST,
         }
 
