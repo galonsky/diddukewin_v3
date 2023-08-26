@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import requests
 
-from ddw.config import get_config_value
 from ddw.models import Status
 
 POST_STATUS_URL = "https://botsin.space/api/v1/statuses"
@@ -43,7 +42,7 @@ class Tooter:
 
     def post_status(self, text: str) -> None:
         if not self._access_token:
-            self._access_token = get_config_value("MASTODON_ACCESS_TOKEN")
+            self._access_token = os.getenv("MASTODON_ACCESS_TOKEN")
 
         latest_status = self.get_latest_status()
         if latest_status:
