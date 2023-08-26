@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ddw.models import IGame, VALID_SCORE_PATTERN, ENDED_PATTERN, ResultType
+from ddw.models import IGame, VALID_SCORE_PATTERN, ResultType
 
 
 @dataclass
@@ -13,9 +13,6 @@ class ESPNGame(IGame):
 
     def has_valid_score(self) -> bool:
         return bool(VALID_SCORE_PATTERN.search(self.score))
-
-    def has_ended(self) -> bool:
-        return bool(ENDED_PATTERN.search(self.winlose))
 
     def get_link(self) -> str:
         if self.has_ended():

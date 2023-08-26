@@ -3,8 +3,9 @@ from datetime import datetime
 
 import requests
 
+from ddw.data.api_basketball.constants import TEAM_ID
+
 API_BASKETBALL_HOST = "api-basketball.p.rapidapi.com"
-TEAM_ID = "1890"
 API_URL = "https://api-basketball.p.rapidapi.com/games"
 
 
@@ -17,7 +18,7 @@ def get_season(as_of: datetime) -> str:
 
 class APIBasketballFetcher:
     def fetch_games(self) -> dict:
-        querystring = {"season": get_season(datetime.now()), "team": TEAM_ID}
+        querystring = {"season": get_season(datetime.now()), "team": str(TEAM_ID)}
 
         headers = {
             "X-RapidAPI-Key": os.getenv("API_BASKETBALL_KEY"),

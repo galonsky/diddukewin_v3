@@ -6,7 +6,6 @@ import re
 from typing import Dict, Optional
 
 VALID_SCORE_PATTERN = re.compile(r"[0-9]+-[0-9]+")
-ENDED_PATTERN = re.compile(r"[WL]")
 LINK_PATTERN = re.compile(r"https?://")
 
 
@@ -17,13 +16,8 @@ class ResultType(enum.Enum):
 
 
 class IGame(ABC):
-    @abstractmethod
     def has_ended(self) -> bool:
-        ...
-
-    @abstractmethod
-    def get_link(self) -> str:
-        ...
+        return self.get_result_type() != ResultType.NOT_YET
 
     @abstractmethod
     def get_result_type(self) -> ResultType:
@@ -55,10 +49,6 @@ class GameDisplay:
 
     def __init__(self, game: IGame):
         self.game = game
-
-    @property
-    def link(self):
-        return self.game.get_link()
 
     @property
     def css_class(self):

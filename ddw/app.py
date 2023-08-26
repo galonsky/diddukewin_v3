@@ -1,5 +1,6 @@
 import os
 
+from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
 
@@ -29,7 +30,12 @@ logger = logging.getLogger()
 
 
 def run_update():
-    game = ESPNEvaluator().find_current_game()
+    evaluator: IEvaluator = ESPNEvaluator()
+    game = evaluator.find_current_game()
+    if not game:
+        logger.info("No game found, exiting")
+        return
+
     logger.info(f"Found current game: {game}")
     game_display = GameDisplay(game)
     rendered = render(game_display)
