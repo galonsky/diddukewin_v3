@@ -102,6 +102,18 @@ jobs:
             . .venv/bin/activate
             black --check .
 
+
+  build-docker:
+    docker:
+      - image: cimg/base:stable
+    resource_class: arm.medium
+    working_directory: ~/repo
+    steps:
+      - setup_remote_docker:
+          version: 20.10.11
+      - attach_workspace:
+          at: ~/
+      - run: docker buildx build --push --platform linux/arm/v7,linux/arm64/v8 --tag galonsky/diddukewin:latest .
 workflows:
   version: 2
   tests:
@@ -116,3 +128,11 @@ workflows:
       - black:
           requires:
             - build
+      - build-docker:
+          requires:
+            - unit-tests
+            - mypy
+            - black
+          filters:
+            branches:
+              only: master
