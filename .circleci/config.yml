@@ -112,7 +112,11 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: ~/
-      - run: docker buildx build --push --platform linux/arm/v7,linux/arm64/v8 --tag galonsky/diddukewin:latest .
+      - run:
+        name: configure and run buildx
+        command: |
+          docker buildx create --use
+          docker buildx build --push --platform linux/arm/v7,linux/arm64/v8 --tag galonsky/diddukewin:latest .
 workflows:
   version: 2
   tests:
