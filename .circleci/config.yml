@@ -115,6 +115,7 @@ jobs:
       - run:
           name: configure and run buildx
           command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
             docker buildx create --use
             docker buildx build --push --platform linux/arm/v7,linux/arm64/v8 --tag galonsky/diddukewin:latest .
 workflows:
