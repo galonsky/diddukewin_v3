@@ -1,30 +1,10 @@
-from ddw.exceptions import NoGamesFoundException
-from ddw.fetcher import ScoreFetcher
-from ddw.models import Game
-from ddw.parser import Parser
-import logging
+from abc import ABC, abstractmethod
+from typing import Optional
+
+from ddw.models import IGame
 
 
-logger = logging.getLogger()
-
-
-class Evaluator:
-    def __init__(
-        self, fetcher: ScoreFetcher = ScoreFetcher(), parser: Parser = Parser()
-    ):
-        self.fetcher = fetcher
-        self.parser = parser
-
-    def find_current_game(self) -> Game:
-        body = self.fetcher.fetch()
-        logger.info("Fetched content")
-        games = list(self.parser.parse(body))
-        if not games:
-            raise NoGamesFoundException()
-        if len(games) < 2:
-            return games[0]
-
-        if games[1].has_valid_score():
-            return games[1]
-        else:
-            return games[0]
+class IEvaluator(ABC):
+    @abstractmethod
+    def find_current_game(self) -> Optional[IGame]:
+        ...

@@ -1,7 +1,7 @@
 import re
 from typing import Iterator
 
-from ddw.models import Game
+from ddw.data.espn.models import ESPNGame
 
 INITIAL_PATTERN = re.compile(r"teamschedule")
 DATA_PATTERN = re.compile(r"gamecast(?P<urlslug>[^']*)'>(?P<datum>[^<]*)<")
@@ -10,7 +10,7 @@ DATA_GROUPS = ("date", "opponent", "winlose", "score")
 
 
 class Parser:
-    def parse(self, body) -> Iterator[Game]:
+    def parse(self, body) -> Iterator[ESPNGame]:
         match = INITIAL_PATTERN.search(body)
         if not match:
             raise ValueError("cannot find team schedule")
@@ -26,4 +26,4 @@ class Parser:
 
                 game_dict["urlslug"] = match.group("urlslug").strip()
                 game_dict[group_name] = match.group("datum").strip()
-            yield Game(**game_dict)
+            yield ESPNGame(**game_dict)

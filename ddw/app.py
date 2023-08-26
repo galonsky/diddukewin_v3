@@ -1,9 +1,10 @@
 import os
 
+from ddw.data.api_basketball.evaluator import APIBasketballEvaluator
+from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
 from ddw.config import should_tweet, should_toot
-from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
 from ddw.uploader import upload
@@ -21,7 +22,12 @@ logger = logging.getLogger()
 
 
 def run_update():
-    game = Evaluator().find_current_game()
+    evaluator: IEvaluator = APIBasketballEvaluator()
+    game = evaluator.find_current_game()
+    if not game:
+        logger.info("No game found, exiting")
+        return
+
     logger.info(f"Found current game: {game}")
     game_display = GameDisplay(game)
     rendered = render(game_display)
