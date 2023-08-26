@@ -2,15 +2,7 @@ import os
 
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
-
-
-if os.getenv("XRAY_ENABLED"):
-    from aws_xray_sdk.core import patch_all
-
-    patch_all()
-
-
-from ddw.config import should_tweet, ssm_config, should_toot
+from ddw.config import should_tweet, should_toot
 from ddw.evaluator import Evaluator
 from ddw.models import GameDisplay
 from ddw.renderer import render
@@ -49,12 +41,5 @@ def run_update():
         logger.info("Not posting since game not ended")
 
 
-def lambda_handler(event, context):
-    logger.setLevel(logging.INFO)
-    if event.get("bust"):
-        tweeter.bust()
-        tooter.bust()
-        ssm_config.bust_cache()
-
+if __name__ == "__main__":
     run_update()
-    return {"success": True}
