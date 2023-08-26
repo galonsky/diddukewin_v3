@@ -3,8 +3,6 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2.1
-orbs:
-  sam: circleci/aws-sam-serverless@2.1.0
 jobs:
   build:
     docker:
@@ -104,27 +102,6 @@ jobs:
             . .venv/bin/activate
             black --check .
 
-  deploy:
-    docker:
-      - image: cimg/python:3.11.4
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - sam/install
-      - run:
-          name: reinstall with crypto patch
-          command: pip install aws-sam-cli --force-reinstall "cryptography==38.0.4"
-      - run:
-          name: sam build
-          command: sam build
-      - run:
-          name: sam deploy
-          command: sam deploy --stack-name ddw --capabilities CAPABILITY_IAM --s3-bucket
-            aws-sam-cli-managed-default-samclisourcebucket-jdq32m7bbjhg
-            --s3-prefix ddw
-    # The resource_class feature allows configuring CPU and RAM resources for each job. Different resource classes are available for different executors. https://circleci.com/docs/2.0/configuration-reference/#resourceclass
-    resource_class: large
-
 workflows:
   version: 2
   tests:
@@ -139,11 +116,3 @@ workflows:
       - black:
           requires:
             - build
-      - deploy:
-          requires:
-            - unit-tests
-            - mypy
-            - black
-          filters:
-            branches:
-              only: master
