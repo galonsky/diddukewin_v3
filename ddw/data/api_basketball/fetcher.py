@@ -25,5 +25,7 @@ class APIBasketballFetcher:
             "X-RapidAPI-Host": API_BASKETBALL_HOST,
         }
 
-        response = requests.get(API_URL, headers=headers, params=querystring)
+        response = requests.get(
+            API_URL, headers=headers, params=querystring, timeout=10
+        )
         return response.json()
