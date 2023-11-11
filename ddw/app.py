@@ -1,6 +1,6 @@
 import os
 
-from ddw.data.api_basketball.evaluator import APIBasketballEvaluator
+from ddw.data.goduke.evaluator import GoDukeEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
@@ -22,7 +22,7 @@ logger = logging.getLogger()
 
 
 def run_update():
-    evaluator: IEvaluator = APIBasketballEvaluator()
+    evaluator: IEvaluator = GoDukeEvaluator()
     game = evaluator.find_current_game()
     if not game:
         logger.info("No game found, exiting")
