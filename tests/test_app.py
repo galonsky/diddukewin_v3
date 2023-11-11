@@ -1,14 +1,14 @@
 import pytest
 
 from ddw.app import run_update
-from ddw.data.api_basketball.evaluator import APIBasketballEvaluator
 from ddw.data.espn.models import ESPNGame
+from ddw.data.goduke.evaluator import GoDukeEvaluator
 
 
 class TestRunUpdate:
     @pytest.fixture
     def mock_evaluator(self, mocker):
-        return mocker.patch.object(APIBasketballEvaluator, "find_current_game")
+        return mocker.patch.object(GoDukeEvaluator, "find_current_game")
 
     @pytest.fixture
     def mock_render(self, mocker):
