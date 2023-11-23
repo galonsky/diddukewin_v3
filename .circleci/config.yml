@@ -138,16 +138,28 @@ workflows:
   version: 2
   tests:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
       - unit-tests:
           requires:
             - build
+          filters:
+            tags:
+              only: /^v.*/
       - mypy:
           requires:
             - build
+          filters:
+            tags:
+              only: /^v.*/
       - black:
           requires:
             - build
+          filters:
+            tags:
+              only: /^v.*/
       - build-docker:
           requires:
             - unit-tests
@@ -156,6 +168,8 @@ workflows:
           filters:
             branches:
               only: master
+            tags:
+              ignore: /.*/
       - build-docker-tag:
           requires:
             - unit-tests
@@ -164,3 +178,5 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+            branches:
+              ignore: /.*/
