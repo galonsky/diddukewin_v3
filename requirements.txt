@@ -1,4 +1,4 @@
-requests==2.31.0
+requests==2.32.2
 Jinja2==2.11.3
 MarkupSafe==2.0.1  # need to pin for Jinja?
 htmlmin==0.1.12
