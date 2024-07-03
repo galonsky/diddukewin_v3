@@ -106,34 +106,34 @@ jobs:
   build-docker:
     docker:
       - image: cimg/base:2024.06
-    resource_class: arm.medium
+    resource_class: medium
     working_directory: ~/repo
     steps:
       - setup_remote_docker
       - attach_workspace:
           at: ~/
       - run:
-          name: configure and run buildx
+          name: build and push images
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
-            docker buildx create --use
-            docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t galonsky/diddukewin:latest -t galonsky/diddukewin:$CIRCLE_SHA1 .
+            docker build -t galonsky/diddukewin:latest -t galonsky/diddukewin:$CIRCLE_SHA1 .
+            docker push --all-tags galonsky/diddukewin
 
   build-docker-tag:
     docker:
       - image: cimg/base:2024.06
-    resource_class: arm.medium
+    resource_class: medium
     working_directory: ~/repo
     steps:
       - setup_remote_docker
       - attach_workspace:
           at: ~/
       - run:
-          name: configure and run buildx
+          name: build and push images
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
-            docker buildx create --use
-            docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 -t galonsky/diddukewin:$CIRCLE_TAG .
+            docker build -t galonsky/diddukewin:$CIRCLE_TAG .
+            docker push --all-tags galonsky/diddukewin
 workflows:
   version: 2
   tests:
