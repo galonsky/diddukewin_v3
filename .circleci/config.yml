@@ -122,7 +122,7 @@ jobs:
   build-docker-tag:
     docker:
       - image: cimg/base:2024.06
-    resource_class: arm.medium
+    resource_class: medium
     working_directory: ~/repo
     steps:
       - setup_remote_docker
