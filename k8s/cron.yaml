@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: diddukewin
+  namespace: default
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - envFrom:
+            - configMapRef:
+                name: ddw-config
+            image: galonsky/diddukewin:v3.0.2
+            imagePullPolicy: IfNotPresent
+            name: diddukewin
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: '*/10 11-23,0-1 * * *'
+  startingDeadlineSeconds: 10
+  successfulJobsHistoryLimit: 3
+  suspend: false
+  timeZone: America/New_York
