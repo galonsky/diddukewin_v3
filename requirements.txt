@@ -4,5 +4,5 @@ MarkupSafe==2.0.1  # need to pin for Jinja?
 htmlmin==0.1.12
 boto3==1.17.2
 python-twitter==3.5
-sentry-sdk==1.29.2
+sentry-sdk==2.18.0
 atproto==0.0.55
