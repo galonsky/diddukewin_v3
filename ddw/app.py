@@ -1,10 +1,11 @@
 import os
 
+from ddw.bluesky import skeeter
 from ddw.data.goduke.evaluator import GoDukeEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
-from ddw.config import should_tweet, should_toot
+from ddw.config import should_tweet, should_toot, should_skeet
 from ddw.models import GameDisplay
 from ddw.renderer import render
 from ddw.uploader import upload
@@ -18,6 +19,7 @@ if os.getenv("SENTRY_DSN"):
 
 
 logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO)
 
 
 def run_update():
@@ -42,6 +44,11 @@ def run_update():
             tweeter.post_tweet(game_display.tweet_text)
         else:
             logger.info("Not tweeting since tweeting disabled")
+
+        if should_skeet():
+            skeeter.post_skeet(game_display.result_and_score)
+        else:
+            logger.info("Not skeeting since skeeting disabled")
     else:
         logger.info("Not posting since game not ended")
 

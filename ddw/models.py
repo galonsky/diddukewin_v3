@@ -63,6 +63,10 @@ class GameDisplay:
         return f"{self.RESULT_TO_WINLOSS[self.game.get_result_type()]} {self.game.get_score()}"
 
     @property
+    def result_and_score(self) -> str:
+        return f"{self.result_text}. {self.game.get_score()}"
+
+    @property
     def tweet_text(self):
         return f"{self.result_text}. {self.game.get_score()} http://www.diddukewin.com"
 
