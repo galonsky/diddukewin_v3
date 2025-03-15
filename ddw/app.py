@@ -2,6 +2,7 @@ import os
 
 from ddw.bluesky import skeeter
 from ddw.data.goduke.evaluator import GoDukeEvaluator
+from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
@@ -23,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run_update():
-    evaluator: IEvaluator = GoDukeEvaluator()
+    evaluator = get_evaluator()
     game = evaluator.find_current_game()
     if not game:
         logger.info("No game found, exiting")
@@ -51,6 +52,12 @@ def run_update():
             logger.info("Not skeeting since skeeting disabled")
     else:
         logger.info("Not posting since game not ended")
+
+
+def get_evaluator() -> IEvaluator:
+    if os.getenv("USE_NCAA"):
+        return NCAAEvaluator()
+    return GoDukeEvaluator()
 
 
 if __name__ == "__main__":
