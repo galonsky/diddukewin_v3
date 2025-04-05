@@ -41,6 +41,12 @@ def ncaa_pregame() -> str:
 
 
 class TestFindCurrentGame:
+    def test_when_fetcher_returns_none_returns_none(self) -> None:
+        fetcher = MagicMock()
+        fetcher.fetch_scoreboard.return_value = None
+        evaluator = NCAAEvaluator(fetcher)
+        assert evaluator.find_current_game() is None
+
     def test_finds_win(self, ncaa_win: str) -> None:
         fetcher = MagicMock()
         fetcher.fetch_scoreboard.return_value = ncaa_win

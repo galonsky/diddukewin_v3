@@ -21,6 +21,8 @@ class NCAAEvaluator(IEvaluator):
         if now.hour < 6:
             now = now - timedelta(days=1)
         scoreboard = self.fetcher.fetch_scoreboard(now)
+        if not scoreboard:
+            return None
         possible_games = [
             game["game"]
             for game in scoreboard["games"]
