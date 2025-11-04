@@ -11,10 +11,14 @@ from ddw.models import IGame, ResultType
 
 class NCAAEvaluator(IEvaluator):
     def __init__(
-        self, fetcher: Optional[NCAAFetcher] = None, clock: Optional[Clock] = None
+        self,
+        fetcher: Optional[NCAAFetcher] = None,
+        clock: Optional[Clock] = None,
+        team_short_name: str = "Duke",
     ) -> None:
         self.fetcher = fetcher or NCAAFetcher()
         self.clock = clock or Clock()
+        self.team_short_name = team_short_name
 
     def find_current_game(self) -> Optional[IGame]:
         now = self.clock.now()
@@ -24,10 +28,13 @@ class NCAAEvaluator(IEvaluator):
         if not scoreboard:
             return None
         possible_games = [
-            game["game"]
-            for game in scoreboard["games"]
-            if game["game"]["home"]["names"]["short"] == "Duke"
-            or game["game"]["away"]["names"]["short"] == "Duke"
+            game
+            for game in scoreboard["data"]["contests"]
+            if [
+                team
+                for team in game["teams"]
+                if team["nameShort"] == self.team_short_name
+            ]
         ]
         if not possible_games:
             return None
@@ -35,15 +42,15 @@ class NCAAEvaluator(IEvaluator):
             raise Exception("more than one game?")
 
         game = possible_games[0]
-        if game["gameState"] == "pre":
+        if game["gameState"] == "P":
             return None
 
-        if game["home"]["names"]["short"] == "Duke":
-            duke_info = game["home"]
-            away_info = game["away"]
+        if game["teams"][0]["nameShort"] == self.team_short_name:
+            duke_info = game["teams"][0]
+            away_info = game["teams"][1]
         else:
-            duke_info = game["away"]
-            away_info = game["home"]
+            duke_info = game["teams"][1]
+            away_info = game["teams"][0]
 
         score_str = f"{duke_info['score']}-{away_info['score']}"
         result_type = self._get_result_type(game, duke_info)
@@ -51,7 +58,7 @@ class NCAAEvaluator(IEvaluator):
 
     @staticmethod
     def _get_result_type(game: dict, duke_info: dict) -> ResultType:
-        if game["gameState"] != "final":
+        if game["gameState"] != "F":
             return ResultType.NOT_YET
 
-        return ResultType.WIN if duke_info["winner"] else ResultType.LOSS
+        return ResultType.WIN if duke_info["isWinner"] else ResultType.LOSS
