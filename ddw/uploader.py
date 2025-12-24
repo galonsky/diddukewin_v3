@@ -1,4 +1,6 @@
 import hashlib
+from os import getenv
+
 from botocore.exceptions import ClientError
 import logging
 
@@ -6,7 +8,7 @@ from ddw.aws import s3
 
 logger = logging.getLogger()
 
-BUCKET_NAME = "diddukewin.com"
+BUCKET_NAME = getenv("BUCKET_NAME", "diddukewin.com")
 KEY = "index.html"
 
 
