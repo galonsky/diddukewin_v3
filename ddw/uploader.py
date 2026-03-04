@@ -36,5 +36,11 @@ def upload(content: str, bucket: str = BUCKET_NAME, key: str = KEY):
         logger.info("Content hasn't changed, skipping upload.")
         return
     logger.info("Uploading new file")
-    s3.put_object(Bucket=bucket, Key=key, Body=content, ContentType="text/html")
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=content,
+        ContentType="text/html",
+        CacheControl="public, max-age=60, s-maxage=300",
+    )
     logger.info("Upload complete")

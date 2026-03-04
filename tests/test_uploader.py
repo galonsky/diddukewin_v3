@@ -60,5 +60,9 @@ class TestUpload:
         should_upload_mock.return_value = True
         upload("food", "bar", "gaz")
         client_mock.put_object.assert_called_once_with(
-            Bucket="bar", Key="gaz", Body="food", ContentType="text/html"
+            Bucket="bar",
+            Key="gaz",
+            Body="food",
+            ContentType="text/html",
+            CacheControl="public, max-age=60, s-maxage=300",
         )
