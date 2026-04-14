@@ -1,7 +1,7 @@
 [project]
 name = "diddukewin"
 version = "0.1.0"
-requires-python = "==3.14.3"
+requires-python = ">=3.14,<3.15"
 dependencies = [
     "requests==2.32.4",
     "Jinja2==3.1.6",
