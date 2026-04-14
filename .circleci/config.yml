@@ -6,7 +6,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -15,32 +15,33 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v5-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
-              "requirements-dev.txt" }}
+            - v6-uv-dependencies-{{ checksum "pyproject.toml" }}-{{ checksum
+              "uv.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v5-dependencies-
+            - v6-uv-dependencies-
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install -r requirements-dev.txt
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            ~/.local/bin/uv sync --frozen --group dev --group lint
 
       - save_cache:
           paths:
             - ./.venv
-          key: v5-dependencies-{{ checksum "requirements.txt" }}-{{ checksum
-            "requirements-dev.txt" }}
+          key: v6-uv-dependencies-{{ checksum "pyproject.toml" }}-{{ checksum
+            "uv.lock" }}
 
       - persist_to_workspace:
           root: ~/
           paths:
             - repo
+            - .local/bin/uv
+            - .local/bin/uvx
 
   unit-tests:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -50,14 +51,13 @@ jobs:
       - run:
           name: run tests
           command: |
-            . .venv/bin/activate
-            pytest --junitxml=test-reports/pytest/junit.xml
+            ~/.local/bin/uv run --frozen pytest --junitxml=test-reports/pytest/junit.xml
 
       - store_test_results:
           path: test-reports
   mypy:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -65,24 +65,16 @@ jobs:
           at: ~/
 
       - run:
-          name: install dependencies
-          command: |
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install "mypy==1.5.1" "types-requests==2.31.0"
-
-      - run:
           name: run mypy
           command: |
-            . .venv/bin/activate
-            mypy --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml ddw
+            ~/.local/bin/uv run --frozen --group lint mypy --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml ddw
 
       - store_test_results:
           path: test-reports
 
   black:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11.4
 
     working_directory: ~/repo
     steps:
@@ -90,17 +82,9 @@ jobs:
           at: ~/
 
       - run:
-          name: install dependencies
-          command: |
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install black==23.1.0
-
-      - run:
           name: run black
           command: |
-            . .venv/bin/activate
-            black --check .
+            ~/.local/bin/uv run --frozen --group lint black --check .
 
 
   build-docker:
