@@ -59,7 +59,11 @@ class Skeeter:
         if not feed_response.feed:
             return None
 
-        return Skeet.from_record(feed_response.feed[0].post.record)
+        record = feed_response.feed[0].post.record
+        if not isinstance(record, Record):
+            return None
+
+        return Skeet.from_record(record)
 
 
 skeeter = Skeeter()

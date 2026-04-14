@@ -24,7 +24,7 @@ dev = [
 ]
 lint = [
     "black==23.1.0",
-    "mypy==1.5.1",
+    "ty==0.0.22",
     "types-requests==2.31.0",
 ]
 
