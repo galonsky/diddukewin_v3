@@ -55,7 +55,7 @@ jobs:
 
       - store_test_results:
           path: test-reports
-  mypy:
+  ty:
     docker:
       - image: cimg/python:3.11.4
 
@@ -65,9 +65,10 @@ jobs:
           at: ~/
 
       - run:
-          name: run mypy
+          name: run ty
           command: |
-            ~/.local/bin/uv run --frozen --group lint mypy --ignore-missing-imports --scripts-are-modules --junit-xml test-reports/mypy/junit.xml ddw
+            mkdir -p test-reports/ty
+            ~/.local/bin/uv run --frozen --group lint ty check --output-format junit . > test-reports/ty/junit.xml
 
       - store_test_results:
           path: test-reports
@@ -146,7 +147,7 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - mypy:
+      - ty:
           requires:
             - build
           filters:
@@ -161,7 +162,7 @@ workflows:
       - build-docker:
           requires:
             - unit-tests
-            - mypy
+            - ty
             - black
           filters:
             branches:
@@ -171,7 +172,7 @@ workflows:
       - build-docker-tag:
           requires:
             - unit-tests
-            - mypy
+            - ty
             - black
           filters:
             tags:
