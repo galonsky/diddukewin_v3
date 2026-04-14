@@ -6,7 +6,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/python:3.11.4
+      - image: cimg/python:3.14.3
 
     working_directory: ~/repo
     steps:
@@ -41,7 +41,7 @@ jobs:
 
   unit-tests:
     docker:
-      - image: cimg/python:3.11.4
+      - image: cimg/python:3.14.3
 
     working_directory: ~/repo
     steps:
@@ -57,7 +57,7 @@ jobs:
           path: test-reports
   ty:
     docker:
-      - image: cimg/python:3.11.4
+      - image: cimg/python:3.14.3
 
     working_directory: ~/repo
     steps:
@@ -75,7 +75,7 @@ jobs:
 
   black:
     docker:
-      - image: cimg/python:3.11.4
+      - image: cimg/python:3.14.3
 
     working_directory: ~/repo
     steps:
