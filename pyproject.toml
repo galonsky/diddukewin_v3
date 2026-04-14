@@ -1,12 +1,12 @@
 [project]
 name = "diddukewin"
 version = "0.1.0"
-requires-python = "==3.11.4"
+requires-python = "==3.14.3"
 dependencies = [
     "requests==2.32.4",
     "Jinja2==3.1.6",
-    "htmlmin==0.1.12",
-    "boto3==1.17.2",
+    "minify-html==0.18.1",
+    "boto3==1.42.89",
     "python-twitter==3.5",
     "sentry-sdk==2.18.0",
     "atproto==0.0.55",

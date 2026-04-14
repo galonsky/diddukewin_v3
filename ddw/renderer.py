@@ -1,4 +1,4 @@
-from htmlmin.decorator import htmlmin
+from minify_html import minify
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from ddw.models import GameDisplay
@@ -8,7 +8,6 @@ env = Environment(
 )
 
 
-@htmlmin(remove_empty_space=True)
 def render(game_display: GameDisplay) -> str:
     template = env.get_template("index.html")
-    return template.render(game_display=game_display)
+    return minify(template.render(game_display=game_display), keep_comments=True)
