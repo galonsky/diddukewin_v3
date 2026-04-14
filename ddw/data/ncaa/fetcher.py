@@ -4,7 +4,6 @@ from typing import Optional
 
 import requests
 
-
 logger = logging.getLogger()
 
 

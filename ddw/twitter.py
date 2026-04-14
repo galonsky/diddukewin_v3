@@ -6,7 +6,6 @@ import twitter
 from ddw.models import Tweet
 import logging
 
-
 logger = logging.getLogger()
 
 

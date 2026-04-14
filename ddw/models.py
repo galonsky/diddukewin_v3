@@ -20,12 +20,10 @@ class IGame(ABC):
         return self.get_result_type() != ResultType.NOT_YET
 
     @abstractmethod
-    def get_result_type(self) -> ResultType:
-        ...
+    def get_result_type(self) -> ResultType: ...
 
     @abstractmethod
-    def get_score(self) -> str:
-        ...
+    def get_score(self) -> str: ...
 
 
 class GameDisplay:

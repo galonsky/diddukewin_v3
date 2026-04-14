@@ -5,7 +5,6 @@ from ddw.data.api_basketball.models import APIBasketballGame
 from ddw.evaluator import IEvaluator
 from ddw.models import IGame
 
-
 STATUSES_TO_IGNORE = {
     "NS",
     "POST",
