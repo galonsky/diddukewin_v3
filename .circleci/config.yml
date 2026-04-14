@@ -97,6 +97,13 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: trust github ssh host
+          command: |
+            mkdir -p ~/.ssh
+            printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' >> ~/.ssh/known_hosts
+            chmod 700 ~/.ssh
+            chmod 600 ~/.ssh/known_hosts
+      - run:
           name: build and push images
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
@@ -112,6 +119,13 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: ~/
+      - run:
+          name: trust github ssh host
+          command: |
+            mkdir -p ~/.ssh
+            printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' >> ~/.ssh/known_hosts
+            chmod 700 ~/.ssh
+            chmod 600 ~/.ssh/known_hosts
       - run:
           name: build and push images
           command: |
