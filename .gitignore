@@ -2,8 +2,8 @@
 .aws-sam/
 **/__pycache__/
 .env
+.venv/
 .pytest_cache/
-.python-version
 .DS_Store
 .coverage
 coverage.xml

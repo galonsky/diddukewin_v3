@@ -1,10 +1,12 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:0.11.1 AS uv
+FROM python:3.11.4-slim
 
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY --from=uv /uv /uvx /bin/
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --frozen --no-dev
 
 COPY ddw ./ddw
 ENV PYTHONPATH=.
-CMD [ "python", "ddw/app.py" ]
+CMD [ "uv", "run", "--no-sync", "python", "ddw/app.py" ]
