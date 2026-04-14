@@ -6,7 +6,6 @@ from ddw.data.goduke.models import GoDukeGame
 from ddw.evaluator import IEvaluator
 from ddw.models import IGame
 
-
 WIN_LOSS_PATTERN = re.compile(r"[WL] \d+-\d+")
 
 

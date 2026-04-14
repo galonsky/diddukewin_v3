@@ -10,7 +10,6 @@ from atproto_client.utils import TextBuilder
 
 from ddw.models import Status
 
-
 logger = logging.getLogger()
 MIN_HOURS_BETWEEN_SKEETS = int(os.getenv("MIN_HOURS_BETWEEN_SKEETS", 8))
 

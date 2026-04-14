@@ -12,7 +12,6 @@ from ddw.renderer import render
 from ddw.uploader import upload
 import logging
 
-
 if os.getenv("SENTRY_DSN"):
     import sentry_sdk
 

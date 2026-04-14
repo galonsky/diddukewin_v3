@@ -6,7 +6,6 @@ from ddw.data.espn.fetcher import ScoreFetcher
 from ddw.data.espn.models import ESPNGame
 from ddw.data.espn.parser import Parser
 
-
 logger = logging.getLogger()
 
 
