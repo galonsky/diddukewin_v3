@@ -9,7 +9,7 @@ dependencies = [
     "boto3==1.42.89",
     "python-twitter==3.5",
     "sentry-sdk==2.18.0",
-    "atproto==0.0.65",
+    "atproto==0.0.69",
     "cryptography==46.0.7",
 ]
 
