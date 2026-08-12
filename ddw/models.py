@@ -26,6 +26,18 @@ class IGame(ABC):
     def get_score(self) -> str: ...
 
 
+@dataclass
+class LastKnownGame(IGame):
+    result_type: ResultType
+    score: str
+
+    def get_result_type(self) -> ResultType:
+        return self.result_type
+
+    def get_score(self) -> str:
+        return self.score
+
+
 class GameDisplay:
     RESULT_TO_CSS_CLASS = {
         ResultType.WIN: "yes",

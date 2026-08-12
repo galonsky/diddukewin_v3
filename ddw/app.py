@@ -6,10 +6,10 @@ from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
-from ddw.config import should_tweet, should_toot, should_skeet
+from ddw.config import should_force_upload, should_skeet, should_toot, should_tweet
 from ddw.models import GameDisplay
-from ddw.renderer import render
-from ddw.uploader import upload
+from ddw.renderer import parse_last_known_game, render
+from ddw.uploader import download, upload
 import logging
 
 if os.getenv("SENTRY_DSN"):
@@ -22,17 +22,36 @@ logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
 
-def run_update():
+def run_update(force_upload: bool | None = None):
+    force_upload = should_force_upload() if force_upload is None else force_upload
     evaluator = get_evaluator()
     game = evaluator.find_current_game()
+    using_last_known_game = False
     if not game:
-        logger.info("No game found, exiting")
-        return
+        if not force_upload:
+            logger.info("No game found, exiting")
+            return
+
+        last_known_html = download()
+        game = parse_last_known_game(last_known_html) if last_known_html else None
+        if not game:
+            logger.info("No last known game found, exiting")
+            return
+
+        using_last_known_game = True
+        logger.info("No game found, using last known game for forced upload")
 
     logger.info(f"Found current game: {game}")
     game_display = GameDisplay(game)
     rendered = render(game_display)
-    upload(rendered)
+    if force_upload:
+        upload(rendered, force=True)
+    else:
+        upload(rendered)
+
+    if using_last_known_game:
+        logger.info("Not posting since using last known game for forced upload")
+        return
 
     if game.has_ended():
         if should_toot():

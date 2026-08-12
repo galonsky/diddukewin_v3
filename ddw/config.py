@@ -11,3 +11,7 @@ def should_toot() -> bool:
 
 def should_skeet() -> bool:
     return bool(os.getenv("SKEETING_ENABLED"))
+
+
+def should_force_upload() -> bool:
+    return bool(os.getenv("FORCE_UPLOAD"))

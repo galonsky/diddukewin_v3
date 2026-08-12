@@ -19,6 +19,15 @@ def head_object(bucket: str, key: str) -> dict:
         return {}
 
 
+def download(bucket: str = BUCKET_NAME, key: str = KEY) -> str | None:
+    try:
+        response = s3.get_object(Bucket=bucket, Key=key)
+        content = response["Body"].read()
+        return content.decode("utf-8") if isinstance(content, bytes) else content
+    except ClientError:
+        return None
+
+
 def md5_content(content: str) -> str:
     md5 = hashlib.md5()
     md5.update(content.encode("utf-8"))
@@ -31,8 +40,13 @@ def should_upload_new(content: str, bucket: str, key: str) -> bool:
     return (not etag) or md5_content(content) != etag
 
 
-def upload(content: str, bucket: str = BUCKET_NAME, key: str = KEY):
-    if not should_upload_new(content, bucket, key):
+def upload(
+    content: str,
+    bucket: str = BUCKET_NAME,
+    key: str = KEY,
+    force: bool = False,
+):
+    if not force and not should_upload_new(content, bucket, key):
         logger.info("Content hasn't changed, skipping upload.")
         return
     logger.info("Uploading new file")

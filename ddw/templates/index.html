@@ -1,98 +1,150 @@
-<!--[if lt IE 7 ]>
-<html class="ie6"> <![endif]-->
-<!--[if IE 7 ]>
-<html class="ie7"> <![endif]-->
-<!--[if IE 8 ]>
-<html class="ie8"> <![endif]-->
-<!--[if IE 9 ]>
-<html class="ie9"> <![endif]-->
-<!--[if (gt IE 9)|!(IE)]><!-->
-<html> <!--<![endif]-->
+<!doctype html>
+<html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="The latest Duke basketball result, at a glance.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Did Duke Win?">
+    <meta property="og:description" content="The latest Duke basketball result, at a glance.">
+    <meta property="og:url" content="https://diddukewin.com/">
+    <title>Did Duke Win?</title>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MG49NWLP01"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-MG49NWLP01');
     </script>
-    <!-- v2 -->
-    <title>Did Duke Win?</title>
-    <meta property="og:url" content="http://diddukewin.com/" />
+
     <style>
-        #middle{
-            text-align:center;
-            margin-top:15%;
+        :root {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-synthesis: none;
+            color: #18202b;
+            background: #ffffff;
         }
 
-        p{
-            font-family: Arial, sans-serif;
+        * {
+            box-sizing: border-box;
         }
 
-        p.yes{
-            font-size:120pt;
-            font-weight: bold;
-            color: green;
+        body {
+            display: grid;
+            min-height: 100vh;
+            min-height: 100svh;
+            margin: 0;
+            padding:
+                max(1.25rem, env(safe-area-inset-top))
+                max(1.25rem, env(safe-area-inset-right))
+                max(1.25rem, env(safe-area-inset-bottom))
+                max(1.25rem, env(safe-area-inset-left));
+            place-items: center;
+            background: #ffffff;
         }
 
-        p.no{
-            font-size:120pt;
-            font-weight: bold;
-            color: red;
+        main {
+            display: flex;
+            width: min(100%, 72rem);
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
 
-        p.notyet{
-            font-size:120pt;
-            font-weight: bold;
-            color: yellow;
+        .result {
+            margin: 0;
+            color: #a36d00;
+            font-size: clamp(5rem, min(32vw, 28vh), 16rem);
+            font-weight: 850;
+            letter-spacing: -0.07em;
+            line-height: 0.86;
+            text-indent: -0.07em;
+            text-wrap: balance;
         }
 
-        .ie6 #social, .ie7 #social, .ie8 #social, .ie9 #social {
-            margin-left: 158px;
+        .yes .result {
+            color: #168143;
         }
 
-        #social{
-            width: 136px;
-            margin: auto;
+        .no .result {
+            color: #cf2e36;
         }
 
-        #bsky, #fb{
-            display: block;
-            border: none;
-            height: 21px;
+        .notyet .result {
+            font-size: clamp(3.25rem, min(19vw, 20vh), 10rem);
+            white-space: nowrap;
         }
 
-        #fb{
-            width: 81px;
-            margin-left: 27px;
+        .score {
+            margin: clamp(1.25rem, 3vh, 2rem) 0 clamp(2rem, 6vh, 3.5rem);
+            color: #303b49;
+            font-size: clamp(1.15rem, 4vw, 1.6rem);
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            line-height: 1.3;
         }
 
-        .ie6 #fb, .ie7 #fb, .ie8 #fb, .ie9 #fb{
-            margin-left: 18px;
+        .social-link {
+            display: inline-flex;
+            min-height: 2.75rem;
+            padding: 0.65rem 0.8rem;
+            align-items: center;
+            gap: 0.55rem;
+            border-radius: 0.65rem;
+            color: #075ec8;
+            font-size: clamp(0.95rem, 3vw, 1.05rem);
+            font-weight: 600;
+            line-height: 1.3;
+            text-decoration-thickness: 0.08em;
+            text-underline-offset: 0.2em;
+            transition: background-color 160ms ease;
         }
 
+        .social-link:hover {
+            background: #f0f6ff;
+        }
+
+        .social-link:focus-visible {
+            outline: 3px solid #75afff;
+            outline-offset: 3px;
+        }
+
+        .social-icon {
+            width: 1.3rem;
+            height: auto;
+            flex: none;
+        }
+
+        @media (max-height: 30rem) and (orientation: landscape) {
+            .score {
+                margin-block: 1rem 1.25rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .social-link {
+                transition: none;
+            }
+        }
     </style>
 </head>
 <body>
-<div id='middle'>
-    <p class='{{ game_display.css_class }}'>
-        {{ game_display.result_text }}
-    </p>
-    <p>
-        {{ game_display.link_text }}
-    </p>
-    <div id='social'>
-        <p>
-            <iframe src="http://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fdiddukewin.com&amp;layout=button_count&amp;show_faces=false&amp;width=450&amp;action=like&amp;colorscheme=light&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:85px; height:21px;" allowTransparency="true" id='fb'></iframe>
+    <main class="{{ game_display.css_class }}">
+        <h1 class="result">{{ game_display.result_text }}</h1>
+        <p class="score" aria-label="Game result: {{ game_display.link_text }}">
+            {{ game_display.link_text }}
         </p>
-        <p id='bsky'>
-            <a href="https://bsky.app/profile/diddukewin.com">
-                Follow @diddukewin on Bluesky
-            </a>
-        </p>
-    </div>
-</div>
+        <a class="social-link" href="https://bsky.app/profile/diddukewin.com" rel="me noopener" target="_blank">
+            <!-- Official Bluesky butterfly: https://bsky.social/about/support/icons -->
+            <svg class="social-icon" viewBox="0 0 568 501" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <path d="M123.121 33.6637C188.241 82.5526 258.281 181.681 284 234.873C309.719 181.681 379.759 82.5526 444.879 33.6637C491.866 -1.61183 568 -28.9064 568 57.9464C568 75.2916 558.055 203.659 552.222 224.501C531.947 296.954 458.067 315.434 392.347 304.249C507.222 323.8 536.444 388.56 473.333 453.32C353.473 576.312 301.061 422.461 287.631 383.039C285.169 375.812 284.017 372.431 284 375.306C283.983 372.431 282.831 375.812 280.369 383.039C266.939 422.461 214.527 576.312 94.6667 453.32C31.5556 388.56 60.7778 323.8 175.653 304.249C109.933 315.434 36.0535 296.954 15.7778 224.501C9.94525 203.659 0 75.2916 0 57.9464C0 -28.9064 76.1345 -1.61183 123.121 33.6637Z" fill="#006aff"/>
+            </svg>
+            Follow @diddukewin on Bluesky
+        </a>
+    </main>
 </body>
 </html>
