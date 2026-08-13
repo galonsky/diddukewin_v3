@@ -14,7 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ipython>=8.13.2,<10",
+    "ipython>=9.16.1,<10",
     "pytest>=9.1.1,<10",
     "pre-commit>=4.6.1,<5",
     "pytest-mock>=1.10.4,<4",
