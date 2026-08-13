@@ -3,31 +3,34 @@ name = "diddukewin"
 version = "0.1.0"
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    "requests==2.33.0",
-    "Jinja2==3.1.6",
-    "minify-html==0.18.1",
-    "boto3==1.42.89",
-    "python-twitter==3.5",
-    "sentry-sdk==2.18.0",
-    "atproto==0.0.65",
-    "cryptography==46.0.7",
+    "requests>=2.33.0,<3",
+    "Jinja2>=3.1.6,<4",
+    "minify-html>=0.18.1,<1",
+    "boto3>=1.42.89,<2",
+    "python-twitter>=3.5,<4",
+    "sentry-sdk>=2.18.0,<3",
+    "atproto>=0.0.69,<0.1",
 ]
 
 [dependency-groups]
 dev = [
-    "ipython==8.13.2",
-    "pytest==9.0.3",
-    "pre-commit==2.9.2",
-    "pytest-mock==1.10.4",
-    "pytest-cov==2.7.1",
-    "pytest-socket==0.3.5",
-    "types-requests==2.31.0",
+    "ipython>=8.13.2,<10",
+    "pytest>=9.0.3,<10",
+    "pre-commit>=2.9.2,<5",
+    "pytest-mock>=1.10.4,<4",
+    "pytest-cov>=2.7.1,<8",
+    "pytest-socket>=0.3.5,<1",
+    "types-requests>=2.31.0,<3",
 ]
 lint = [
-    "black==26.3.1",
-    "ty==0.0.22",
-    "types-requests==2.31.0",
+    "black>=26.3.1,<27",
+    "ty>=0.0.22,<0.1",
+    "types-requests>=2.31.0,<3",
 ]
 
 [tool.uv]
 package = false
+override-dependencies = [
+    # atproto 0.0.69 caps cryptography below 47, excluding security fixes in 50.
+    "cryptography>=50,<51",
+]
