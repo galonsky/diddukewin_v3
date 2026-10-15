@@ -1,15 +1,15 @@
 import pytest
 
 from ddw.app import run_update
-from ddw.data.espn.models import ESPNGame
-from ddw.data.goduke.evaluator import GoDukeEvaluator
+from ddw.data.ncaa.NCAAGame import NCAAGame
+from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.models import LastKnownGame, ResultType
 
 
 class TestRunUpdate:
     @pytest.fixture
     def mock_evaluator(self, mocker):
-        return mocker.patch.object(GoDukeEvaluator, "find_current_game")
+        return mocker.patch.object(NCAAEvaluator, "find_current_game")
 
     @pytest.fixture
     def mock_render(self, mocker):
@@ -48,7 +48,7 @@ class TestRunUpdate:
         mock_should_tweet,
     ):
         mock_should_tweet.return_value = True
-        mock_evaluator.return_value = ESPNGame("", "", "asdf", "32-31", "")
+        mock_evaluator.return_value = NCAAGame(ResultType.NOT_YET, "32-31")
         run_update()
         mock_post_tweet.assert_not_called()
 
@@ -61,7 +61,7 @@ class TestRunUpdate:
         mock_should_tweet,
     ):
         mock_should_tweet.return_value = True
-        mock_evaluator.return_value = ESPNGame("", "", "W", "32-31", "")
+        mock_evaluator.return_value = NCAAGame(ResultType.WIN, "32-31")
         run_update()
         mock_post_tweet.assert_called_once_with("YES. 32-31 http://www.diddukewin.com")
 
