@@ -33,6 +33,8 @@ class Skeeter:
     def post_skeet(self, text: str) -> None:
         client = Client()
         profile_view = client.login(self.username, self.password)
+        if profile_view is None:
+            raise RuntimeError("Bluesky login did not return a profile")
         latest_skeet = self._get_latest_skeet(client, profile_view)
         if latest_skeet:
             logger.info(f"Found latest skeet: {latest_skeet.text_without_link}")
