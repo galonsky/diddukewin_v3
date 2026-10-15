@@ -68,7 +68,10 @@ jobs:
           name: run ty
           command: |
             mkdir -p test-reports/ty
-            ~/.local/bin/uv run --frozen --group lint ty check --output-format junit . > test-reports/ty/junit.xml
+            ~/.local/bin/uv run --frozen --group lint ty check --output-format junit . > test-reports/ty/junit.xml || status=$?
+            # junit output hides the diagnostics from the job log, so print them too
+            ~/.local/bin/uv run --frozen --group lint ty check . || true
+            exit ${status:-0}
 
       - store_test_results:
           path: test-reports
