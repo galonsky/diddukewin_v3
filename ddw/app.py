@@ -1,7 +1,6 @@
 import os
 
 from ddw.bluesky import skeeter
-from ddw.data.goduke.evaluator import GoDukeEvaluator
 from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
@@ -73,9 +72,7 @@ def run_update(force_upload: bool | None = None):
 
 
 def get_evaluator() -> IEvaluator:
-    if os.getenv("USE_NCAA"):
-        return NCAAEvaluator()
-    return GoDukeEvaluator()
+    return NCAAEvaluator()
 
 
 if __name__ == "__main__":
