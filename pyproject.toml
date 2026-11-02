@@ -6,25 +6,25 @@ dependencies = [
     "requests>=2.34.2,<3",
     "Jinja2>=3.1.6,<4",
     "minify-html>=0.18.1,<1",
-    "boto3>=1.43.111,<2",
+    "boto3>=1.43.122,<2",
     "python-twitter>=3.5,<4",
-    "sentry-sdk>=2.71.0,<3",
-    "atproto>=0.0.72,<0.1",
+    "sentry-sdk>=2.73.0,<3",
+    "atproto>=0.0.73,<0.1",
 ]
 
 [dependency-groups]
 dev = [
     "ipython>=9.17.1,<10",
-    "pytest>=9.1.1,<10",
-    "pre-commit>=4.6.2,<5",
-    "pytest-mock>=3.16.0,<4",
+    "pytest>=9.2.0,<10",
+    "pre-commit>=4.7.0,<5",
+    "pytest-mock>=3.17.0,<4",
     "pytest-cov>=7.1.0,<8",
     "pytest-socket>=0.8.1,<1",
     "types-requests>=2.33.0.20261006,<3",
 ]
 lint = [
     "black>=26.10.1,<27",
-    "ty>=0.0.86,<0.1",
+    "ty>=0.0.95,<0.1",
     "types-requests>=2.33.0.20261006,<3",
 ]
 
