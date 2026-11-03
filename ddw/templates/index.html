@@ -153,6 +153,7 @@
             var result = document.querySelector(".result");
             var score = document.querySelector(".score");
             var timer = null;
+            var stopped = false;
 
             function apply(state) {
                 main.className = state.css_class;
@@ -160,14 +161,15 @@
                 var text = state.link_text.trim();
                 score.textContent = text;
                 score.setAttribute("aria-label", "Game result: " + text);
-                if (state.result !== "NOT_YET" && timer) {
+                if (state.result !== "NOT_YET") {
+                    stopped = true;
                     clearInterval(timer);
-                    timer = null;
+                    document.removeEventListener("visibilitychange", poll);
                 }
             }
 
             function poll() {
-                if (document.hidden) { return; }
+                if (stopped || document.hidden) { return; }
                 fetch("/score.json", { cache: "no-cache" })
                     .then(function (r) { return r.ok ? r.json() : null; })
                     .then(function (state) { if (state) { apply(state); } })

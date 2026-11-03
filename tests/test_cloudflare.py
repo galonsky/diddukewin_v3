@@ -33,12 +33,9 @@ def test_failures_do_not_raise(mocker, monkeypatch):
     assert cloudflare.purge_urls(["https://x/"]) is False
 
 
-def test_cache_control_short_ttl_when_unconfigured(monkeypatch):
+def test_cache_control_edge_ttl_is_bounded_with_or_without_purge(monkeypatch):
     monkeypatch.delenv("CLOUDFLARE_ZONE_ID", raising=False)
     assert cloudflare.cache_control(15) == "public, max-age=15, s-maxage=300"
-
-
-def test_cache_control_long_ttl_when_configured(monkeypatch):
     monkeypatch.setenv("CLOUDFLARE_ZONE_ID", "z")
     monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "t")
-    assert cloudflare.cache_control(5) == "public, max-age=5, s-maxage=86400"
+    assert cloudflare.cache_control(5) == "public, max-age=5, s-maxage=300"

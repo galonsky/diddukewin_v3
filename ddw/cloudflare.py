@@ -43,7 +43,10 @@ def purge_urls(urls: list[str]) -> bool:
     return True
 
 
+EDGE_TTL_SECONDS = 300
+
+
 def cache_control(max_age: int) -> str:
-    """Long edge TTL only when we can purge on change; otherwise keep it short."""
-    s_maxage = 86400 if is_configured() else 300
-    return f"public, max-age={max_age}, s-maxage={s_maxage}"
+    """Edge TTL stays short even when purging works, so a failed or skipped
+    purge leaves a stale copy for at most EDGE_TTL_SECONDS."""
+    return f"public, max-age={max_age}, s-maxage={EDGE_TTL_SECONDS}"

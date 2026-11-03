@@ -145,6 +145,10 @@ def run(
             failures = 0
         except Exception as e:
             if not active:
+                if isinstance(e, NCAAThrottled):
+                    # Off-hours throttle: same as the old no-op exit, not a failed Job.
+                    logger.warning(f"NCAA throttled with no live game, exiting: {e}")
+                    return
                 raise  # nothing live yet; fail like a normal cron run
             failures += 1
             logger.exception("Update failed during live game")

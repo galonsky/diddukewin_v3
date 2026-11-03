@@ -214,6 +214,11 @@ class TestRun:
         with pytest.raises(RuntimeError):
             app.run(FakeClock(), lambda s: None)
 
+    def test_throttle_with_no_live_game_exits_cleanly(self, update):
+        update.side_effect = NCAAThrottled(403)
+        app.run(FakeClock(), lambda s: pytest.fail("should not sleep"))
+        assert update.call_count == 1
+
     def test_survives_a_failure_mid_game(self, update):
         update.side_effect = [self.live(), RuntimeError("blip"), self.final()]
         app.run(FakeClock(), lambda s: None)

@@ -69,3 +69,7 @@ class TestRenderState:
         final = render(GameDisplay(NCAAGame(ResultType.WIN, "1-0")))
         assert "/score.json" in live
         assert "/score.json" not in final
+
+    def test_script_stops_listening_when_final(self):
+        live = render(GameDisplay(NCAAGame(ResultType.NOT_YET, "1-0")))
+        assert 'removeEventListener("visibilitychange"' in live
