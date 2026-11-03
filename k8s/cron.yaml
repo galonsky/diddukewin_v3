@@ -23,7 +23,7 @@ spec:
             - secretRef:
                 name: ddw-cloudflare
                 optional: true
-            image: galonsky/diddukewin:v3.1.0
+            image: galonsky/diddukewin:v6.0.0
             imagePullPolicy: IfNotPresent
             name: diddukewin
             resources: {}
