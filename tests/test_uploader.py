@@ -95,3 +95,26 @@ class TestUpload:
             ContentType="text/html",
             CacheControl="public, max-age=60, s-maxage=300",
         )
+
+
+class TestUploadVariants:
+    def test_returns_true_and_uses_custom_headers(self, client_mock):
+        assert upload(
+            "{}",
+            "b",
+            "score.json",
+            force=True,
+            content_type="application/json",
+            cache_control="public, max-age=5",
+        )
+        client_mock.put_object.assert_called_once_with(
+            Bucket="b",
+            Key="score.json",
+            Body="{}",
+            ContentType="application/json",
+            CacheControl="public, max-age=5",
+        )
+
+    def test_returns_false_when_unchanged(self, client_mock, mocker):
+        mocker.patch("ddw.uploader.should_upload_new", return_value=False)
+        assert upload("x", "b", "k") is False

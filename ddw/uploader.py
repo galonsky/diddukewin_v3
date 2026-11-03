@@ -10,6 +10,8 @@ logger = logging.getLogger()
 
 BUCKET_NAME = getenv("BUCKET_NAME", "diddukewin.com")
 KEY = "index.html"
+SCORE_KEY = "score.json"
+DEFAULT_CACHE_CONTROL = "public, max-age=60, s-maxage=300"
 
 
 def head_object(bucket: str, key: str) -> dict:
@@ -45,16 +47,20 @@ def upload(
     bucket: str = BUCKET_NAME,
     key: str = KEY,
     force: bool = False,
-):
+    content_type: str = "text/html",
+    cache_control: str | None = None,
+) -> bool:
+    """Upload content, skipping when unchanged. Returns True if it uploaded."""
     if not force and not should_upload_new(content, bucket, key):
         logger.info("Content hasn't changed, skipping upload.")
-        return
+        return False
     logger.info("Uploading new file")
     s3.put_object(
         Bucket=bucket,
         Key=key,
         Body=content,
-        ContentType="text/html",
-        CacheControl="public, max-age=60, s-maxage=300",
+        ContentType=content_type,
+        CacheControl=cache_control or DEFAULT_CACHE_CONTROL,
     )
     logger.info("Upload complete")
+    return True

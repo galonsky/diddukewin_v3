@@ -42,9 +42,6 @@ class NCAAEvaluator(IEvaluator):
             raise Exception("more than one game?")
 
         game = possible_games[0]
-        if game["gameState"] == "P":
-            return None
-
         if game["teams"][0]["nameShort"] == self.team_short_name:
             duke_info = game["teams"][0]
             away_info = game["teams"][1]
@@ -54,7 +51,19 @@ class NCAAEvaluator(IEvaluator):
 
         score_str = f"{duke_info['score']}-{away_info['score']}"
         result_type = self._get_result_type(game, duke_info)
-        return NCAAGame(result_type, score_str)
+        start_epoch = game.get("startTimeEpoch")
+        return NCAAGame(
+            result_type,
+            score_str,
+            game_state=game["gameState"],
+            start_time=(
+                datetime.fromtimestamp(start_epoch, ZoneInfo("America/New_York"))
+                if start_epoch
+                else None
+            ),
+            period=game.get("currentPeriod") or "",
+            clock=game.get("contestClock") or "",
+        )
 
     @staticmethod
     def _get_result_type(game: dict, duke_info: dict) -> ResultType:

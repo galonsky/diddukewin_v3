@@ -23,11 +23,15 @@ class TestFindCurrentGame:
         evaluator = NCAAEvaluator(fetcher)
         assert evaluator.find_current_game() is None
 
-    def test_when_pregame_returns_none(self, ncaa_new: str) -> None:
+    def test_when_pregame_returns_pregame_game(self, ncaa_new: str) -> None:
         fetcher = MagicMock()
         fetcher.fetch_scoreboard.return_value = ncaa_new
         evaluator = NCAAEvaluator(fetcher, team_short_name="Georgetown")
-        assert evaluator.find_current_game() is None
+        game = evaluator.find_current_game()
+        assert game is not None
+        assert game.is_pregame()
+        assert not game.has_ended()
+        assert game.get_start_time() is not None
 
     def test_final_winner(self, ncaa_new: str) -> None:
         fetcher = MagicMock()
@@ -46,6 +50,15 @@ class TestFindCurrentGame:
         fetcher.fetch_scoreboard.return_value = ncaa_new
         evaluator = NCAAEvaluator(fetcher, team_short_name="Buffalo")
         assert evaluator.find_current_game() == NCAAGame(ResultType.NOT_YET, "76-73")
+
+    def test_in_progress_has_period_and_not_pregame(self, ncaa_new: str) -> None:
+        fetcher = MagicMock()
+        fetcher.fetch_scoreboard.return_value = ncaa_new
+        evaluator = NCAAEvaluator(fetcher, team_short_name="Buffalo")
+        game = evaluator.find_current_game()
+        assert isinstance(game, NCAAGame)
+        assert not game.is_pregame()
+        assert game.period
 
     def test_when_before_6_subtracts_a_day(self, ncaa_new: str) -> None:
         fetcher = MagicMock()
