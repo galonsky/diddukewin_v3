@@ -10,6 +10,8 @@ spec:
     metadata:
       creationTimestamp: null
     spec:
+      activeDeadlineSeconds: 18000
+      backoffLimit: 1
       template:
         metadata:
           creationTimestamp: null
@@ -18,7 +20,10 @@ spec:
           - envFrom:
             - configMapRef:
                 name: ddw-config
-            image: galonsky/diddukewin:v3.0.2
+            - secretRef:
+                name: ddw-cloudflare
+                optional: true
+            image: galonsky/diddukewin:v3.1.0
             imagePullPolicy: IfNotPresent
             name: diddukewin
             resources: {}

@@ -36,3 +36,40 @@ class TestRender:
         assert parse_last_known_game(rendered) == LastKnownGame(
             ResultType.LOSS, "67-70"
         )
+
+
+class TestRenderState:
+    def test_live_state(self):
+        import json
+
+        from ddw.renderer import render_state
+
+        game = NCAAGame(ResultType.NOT_YET, "40-38", period="2ND HALF", clock="5:12")
+        assert json.loads(render_state(GameDisplay(game))) == {
+            "result": "NOT_YET",
+            "result_text": "NOT YET",
+            "css_class": "notyet",
+            "link_text": " 40-38",
+            "period": "2ND HALF",
+            "clock": "5:12",
+        }
+
+    def test_last_known_game_has_empty_period(self):
+        import json
+
+        from ddw.renderer import render_state
+
+        state = json.loads(
+            render_state(GameDisplay(LastKnownGame(ResultType.WIN, "80-71")))
+        )
+        assert state["period"] == "" and state["result_text"] == "YES"
+
+    def test_live_page_includes_poll_script_but_final_does_not(self):
+        live = render(GameDisplay(NCAAGame(ResultType.NOT_YET, "1-0")))
+        final = render(GameDisplay(NCAAGame(ResultType.WIN, "1-0")))
+        assert "/score.json" in live
+        assert "/score.json" not in final
+
+    def test_script_stops_listening_when_final(self):
+        live = render(GameDisplay(NCAAGame(ResultType.NOT_YET, "1-0")))
+        assert 'removeEventListener("visibilitychange"' in live

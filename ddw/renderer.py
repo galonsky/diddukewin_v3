@@ -25,6 +25,23 @@ def render(game_display: GameDisplay) -> str:
     return f"{rendered}<!--ddw-state:{state}-->"
 
 
+def render_state(game_display: GameDisplay) -> str:
+    """Compact JSON the page script polls for live updates (no timestamps, so
+    unchanged scores hash identically and skip the upload)."""
+    game = game_display.game
+    return json.dumps(
+        {
+            "result": game.get_result_type().name,
+            "result_text": game_display.result_text,
+            "css_class": game_display.css_class,
+            "link_text": game_display.link_text,
+            "period": getattr(game, "period", ""),
+            "clock": getattr(game, "clock", ""),
+        },
+        separators=(",", ":"),
+    )
+
+
 def parse_last_known_game(content: str) -> Optional[IGame]:
     state_match = re.search(r"<!--\s*ddw-state:\s*(\{.*?\})\s*-->", content)
     if state_match:

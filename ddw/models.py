@@ -19,6 +19,12 @@ class IGame(ABC):
     def has_ended(self) -> bool:
         return self.get_result_type() != ResultType.NOT_YET
 
+    def is_pregame(self) -> bool:
+        return False
+
+    def get_start_time(self) -> Optional[datetime]:
+        return None
+
     @abstractmethod
     def get_result_type(self) -> ResultType: ...
 
