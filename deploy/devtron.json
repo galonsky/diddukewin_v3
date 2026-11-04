@@ -4,15 +4,11 @@
   "namespace": "default",
   "releaseName": "diddukewin-default",
   "installedAppId": 1,
-  "installedAppVersionId": 1,
   "chartStoreId": 50,
   "chartSource": "galonsky-charts",
   "registryUrl": "registry-1.docker.io/galonsky",
   "chartName": "diddukewin-chart",
   "chartUrl": "oci://registry-1.docker.io/galonsky/diddukewin-chart",
   "syncSchedule": "*/5 * * * *",
-  "automaticDeployment": false,
-  "legacyAppId": 2,
-  "legacyPipelineId": 2,
-  "legacyPipelineState": "manual-retained"
+  "automaticDeployment": false
 }

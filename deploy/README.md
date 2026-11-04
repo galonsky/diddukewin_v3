@@ -67,10 +67,9 @@ the publisher immediately or change a job that is already running. The release
 name remains `diddukewin-default`; the CronJob name remains `diddukewin`.
 The local checkout is not required to deploy published releases.
 
-The older `diddukewin` Devtron app record and image-event pipeline remain in Manual
-mode pending approval for control-plane cleanup. Use the **diddukewin-default Helm
-App** for this workflow. Removing the old records is separate from deleting any
-Kubernetes workloads.
+The older `diddukewin` Devtron app record and image-event pipeline have been
+removed without deleting workloads. Use the **diddukewin-default Helm App** for
+this workflow.
 
 ## Configuration and dependencies
 
