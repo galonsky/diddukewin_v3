@@ -6,7 +6,7 @@ dependencies = [
     "requests>=2.34.2,<3",
     "Jinja2>=3.1.6,<4",
     "minify-html>=0.18.1,<1",
-    "boto3>=1.43.122,<2",
+    "boto3>=1.43.123,<2",
     "python-twitter>=3.5,<4",
     "sentry-sdk>=2.73.0,<3",
     "atproto>=0.0.73,<0.1",
@@ -14,7 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ipython>=9.17.1,<10",
+    "ipython>=9.18.0,<10",
     "pytest>=9.2.0,<10",
     "pre-commit>=4.7.0,<5",
     "pytest-mock>=3.17.0,<4",
