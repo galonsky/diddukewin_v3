@@ -4,11 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    versioning-strategy: "increase-if-necessary"
-    groups:
-      minor-and-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+    # A limit of 0 disables version updates, so Dependabot only opens PRs for
+    # security updates (which are not subject to this limit).
+    open-pull-requests-limit: 0
