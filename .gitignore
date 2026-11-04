@@ -10,3 +10,5 @@ coverage.xml
 htmlcov/
 **/.mypy_cache/
 samconfig.toml
+deploy/dist/
+deploy/*.local.*

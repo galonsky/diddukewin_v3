@@ -21,6 +21,7 @@ dev = [
     "pytest-cov>=7.1.0,<8",
     "pytest-socket>=0.8.1,<1",
     "types-requests>=2.33.0.20261006,<3",
+    "pyyaml>=6,<7",
 ]
 lint = [
     "black>=26.10.1,<27",

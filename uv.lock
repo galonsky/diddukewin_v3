@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.14.*"
 
 [manifest]
@@ -330,6 +330,7 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-socket" },
+    { name = "pyyaml" },
     { name = "types-requests" },
 ]
 lint = [
@@ -357,6 +358,7 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.1.0,<8" },
     { name = "pytest-mock", specifier = ">=3.17.0,<4" },
     { name = "pytest-socket", specifier = ">=0.8.1,<1" },
+    { name = "pyyaml", specifier = ">=6,<7" },
     { name = "types-requests", specifier = ">=2.33.0.20261006,<3" },
 ]
 lint = [

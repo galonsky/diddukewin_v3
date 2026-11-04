@@ -51,7 +51,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            ~/.local/bin/uv run --frozen pytest --junitxml=test-reports/pytest/junit.xml
+            ~/.local/bin/uv run --frozen pytest tests --junitxml=test-reports/pytest/junit.xml
 
       - store_test_results:
           path: test-reports
@@ -88,32 +88,29 @@ jobs:
             ~/.local/bin/uv run --frozen --group lint black --check .
 
 
-  build-docker:
+  helm-check:
     docker:
-      - image: cimg/base:2024.06
-    resource_class: medium
+      - image: cimg/python:3.14.3
     working_directory: ~/repo
     steps:
-      - setup_remote_docker
       - attach_workspace:
           at: ~/
       - run:
-          name: trust github ssh host
-          command: |
-            mkdir -p ~/.ssh
-            printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' >> ~/.ssh/known_hosts
-            chmod 700 ~/.ssh
-            chmod 600 ~/.ssh/known_hosts
+          name: install pinned Helm
+          command: bash deploy/install-helm.sh
       - run:
-          name: build and push images
+          name: validate chart and release packaging
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
-            docker build -t galonsky/diddukewin:latest -t galonsky/diddukewin:$CIRCLE_SHA1 .
-            docker push --all-tags galonsky/diddukewin
+            export PATH="$HOME/.local/bin:$PATH"
+            helm lint deploy/chart
+            helm template diddukewin-default deploy/chart --namespace default > /tmp/diddukewin.yaml
+            uv run --frozen pytest deploy/tests --junitxml=test-reports/releases/junit.xml
+      - store_test_results:
+          path: test-reports/releases
 
-  build-docker-tag:
+  publish-release:
     docker:
-      - image: cimg/base:2024.06
+      - image: cimg/python:3.14.3
     resource_class: medium
     working_directory: ~/repo
     steps:
@@ -121,61 +118,40 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: trust github ssh host
-          command: |
-            mkdir -p ~/.ssh
-            printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' >> ~/.ssh/known_hosts
-            chmod 700 ~/.ssh
-            chmod 600 ~/.ssh/known_hosts
+          name: install pinned Helm
+          command: bash deploy/install-helm.sh
       - run:
-          name: build and push images
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USER" --password-stdin
-            docker build -t galonsky/diddukewin:$CIRCLE_TAG .
-            docker push --all-tags galonsky/diddukewin
+          name: publish commit image and Helm release
+          command: bash deploy/publish-release.sh
+      - store_artifacts:
+          path: deploy/dist
+          destination: release
+
 workflows:
   version: 2
-  tests:
+  commit-release:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /^v.*/
+      - build
       - unit-tests:
           requires:
             - build
-          filters:
-            tags:
-              only: /^v.*/
       - ty:
           requires:
             - build
-          filters:
-            tags:
-              only: /^v.*/
       - black:
           requires:
             - build
-          filters:
-            tags:
-              only: /^v.*/
-      - build-docker:
+      - helm-check:
+          requires:
+            - build
+      - publish-release:
           requires:
             - unit-tests
             - ty
             - black
+            - helm-check
           filters:
             branches:
               only: master
             tags:
-              ignore: /.*/
-      - build-docker-tag:
-          requires:
-            - unit-tests
-            - ty
-            - black
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
               ignore: /.*/
