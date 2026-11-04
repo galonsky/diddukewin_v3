@@ -7,3 +7,4 @@ updates:
     # A limit of 0 disables version updates, so Dependabot only opens PRs for
     # security updates (which are not subject to this limit).
     open-pull-requests-limit: 0
+    versioning-strategy: "increase-if-necessary"
