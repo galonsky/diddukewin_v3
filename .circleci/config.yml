@@ -118,6 +118,13 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: trust pinned GitHub SSH host key
+          command: |
+            mkdir -p ~/.ssh
+            printf '%s\n' 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' >> ~/.ssh/known_hosts
+            chmod 700 ~/.ssh
+            chmod 600 ~/.ssh/known_hosts
+      - run:
           name: install pinned Helm
           command: bash deploy/install-helm.sh
       - run:
