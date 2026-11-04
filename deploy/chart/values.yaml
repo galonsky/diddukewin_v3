@@ -1,0 +1,34 @@
+# Credential values belong in manually managed Secrets, never in Helm values.
+image:
+  repository: galonsky/diddukewin
+  tag: v6.0.0
+  # Published release packages set this to the image's immutable sha256 digest.
+  digest: ''
+  pullPolicy: IfNotPresent
+
+cronjob:
+  name: diddukewin
+  schedule: '*/10 11-23,0-1 * * *'
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 10
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  suspend: false
+
+job:
+  activeDeadlineSeconds: 18000
+  backoffLimit: 1
+  terminationGracePeriodSeconds: 30
+
+configMapName: ddw-config
+config:
+  BLUESKY_USERNAME: diddukewin.com
+  BUCKET_NAME: diddukewin
+  S3_ENDPOINT_URL: https://9671957a61ab34d9080c5af695c488b7.r2.cloudflarestorage.com
+  SKEETING_ENABLED: '1'
+  USE_NCAA: '1'
+
+credentialsSecretName: ddw-credentials
+cloudflareSecretName: ddw-cloudflare
+resources: {}
