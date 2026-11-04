@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Buildx may read Git provenance from the workspace's SSH-backed checkout.
+# CI installs GitHub's pinned host key; fail instead of prompting if it is missing.
+export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes'
+
 : "${CIRCLE_SHA1:?CircleCI commit SHA is required}"
 : "${CIRCLE_BUILD_NUM:?CircleCI build number is required}"
 : "${DOCKERHUB_USER:?Docker Hub username is required}"
