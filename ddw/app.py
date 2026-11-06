@@ -23,6 +23,7 @@ from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
 from ddw.config import should_force_upload, should_skeet, should_toot, should_tweet
+from ddw.logging_config import configure_logging
 from ddw.models import GameDisplay, IGame
 from ddw.renderer import parse_last_known_game, render, render_state
 from ddw.uploader import SCORE_KEY, download, upload
@@ -35,7 +36,7 @@ if os.getenv("SENTRY_DSN"):
 
 
 logger = logging.getLogger()
-logging.basicConfig(level=logging.INFO)
+configure_logging()
 
 MAX_CONSECUTIVE_FAILURES = 5
 
