@@ -1,5 +1,6 @@
 import os
 import signal
+import sys
 import threading
 from datetime import datetime, timedelta
 from typing import Callable
@@ -7,10 +8,13 @@ from typing import Callable
 from ddw import cloudflare
 from ddw.clock import Clock
 from ddw.config import (
+    idle_poll_seconds,
+    in_active_window,
     live_poll_seconds,
     max_run_hours,
     pregame_grace_minutes,
     pregame_window_minutes,
+    seconds_until_active,
 )
 from ddw.data.ncaa.fetcher import NCAAThrottled
 from ddw.bluesky import skeeter
@@ -131,10 +135,7 @@ def run(
         return
 
     clock = clock or Clock()
-    if sleep is None:
-        stop = threading.Event()
-        signal.signal(signal.SIGTERM, lambda *_: stop.set())
-        sleep = stop.wait
+    sleep = sleep or _sigterm_sleep()
     deadline = clock.now() + timedelta(hours=max_run_hours())
     active = False
     failures = 0
@@ -152,8 +153,7 @@ def run(
                 raise  # nothing live yet; fail like a normal cron run
             failures += 1
             logger.exception("Update failed during live game")
-            if os.getenv("SENTRY_DSN"):
-                sentry_sdk.capture_exception(e)
+            _report(e)
             if failures >= MAX_CONSECUTIVE_FAILURES:
                 logger.error("Too many consecutive failures, exiting")
                 raise
@@ -171,6 +171,57 @@ def run(
             return
 
 
+def serve(
+    clock: Clock | None = None,
+    sleep: Callable[[float], object] | None = None,
+) -> None:
+    """Run forever as a long-lived worker, so a deploy can replace the process
+    at any time, mid-game included: every iteration is stateless.
+
+    Outside the active hours with nothing live, sleep without calling out.
+    Inside them, look for a game every idle interval; while one is live or about
+    to tip off, poll at the live interval. Errors are reported and retried,
+    never fatal. Returns only on SIGTERM (or when ``sleep`` returns True)."""
+    clock = clock or Clock()
+    sleep = sleep or _sigterm_sleep()
+    live = False
+    failures = 0
+    while True:
+        now = clock.now()
+        if not live and not in_active_window(now):
+            delay = min(idle_poll_seconds(), seconds_until_active(now))
+        else:
+            delay = idle_poll_seconds()
+            try:
+                game = run_update(force_upload=False)
+            except Exception as e:
+                failures += 1
+                logger.exception("Update failed")
+                _report(e)
+                if live:
+                    delay = _backoff_delay(e, failures)
+            else:
+                failures = 0
+                live = should_keep_running(game, clock.now())
+                if live:
+                    delay = live_poll_seconds()
+        if sleep(delay) is True:  # Event.wait returns True when signaled
+            logger.info("Stopping on SIGTERM")
+            return
+
+
+def _sigterm_sleep() -> Callable[[float], bool]:
+    """A sleep that returns True early once SIGTERM arrives."""
+    stop = threading.Event()
+    signal.signal(signal.SIGTERM, lambda *_: stop.set())
+    return stop.wait
+
+
+def _report(error: Exception) -> None:
+    if os.getenv("SENTRY_DSN"):
+        sentry_sdk.capture_exception(error)
+
+
 def _backoff_delay(error: Exception, failures: int) -> float:
     if isinstance(error, NCAAThrottled):
         return error.retry_after or min(30 * 2 ** (failures - 1), 300)
@@ -182,4 +233,9 @@ def get_evaluator() -> IEvaluator:
 
 
 if __name__ == "__main__":
-    run()
+    # `once` (or FORCE_UPLOAD) is a one-off manual run; the default is the
+    # long-lived worker the Kubernetes Deployment runs.
+    if should_force_upload() or sys.argv[1:] == ["once"]:
+        run()
+    else:
+        serve()
