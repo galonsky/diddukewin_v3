@@ -45,12 +45,14 @@ def test_package_contains_matching_code_and_chart_release(tmp_path):
         text=True,
     )
     resources = list(yaml.safe_load_all(rendered))
-    assert {row["kind"] for row in resources} == {"ConfigMap", "CronJob"}
-    cron = next(row for row in resources if row["kind"] == "CronJob")
-    assert cron["metadata"]["name"] == "diddukewin"
-    assert cron["spec"]["schedule"] == "*/10 11-23,0-1 * * *"
-    assert cron["spec"]["timeZone"] == "America/New_York"
-    container = cron["spec"]["jobTemplate"]["spec"]["template"]["spec"]["containers"][0]
+    assert {row["kind"] for row in resources} == {"ConfigMap", "Deployment"}
+    deployment = next(row for row in resources if row["kind"] == "Deployment")
+    assert deployment["metadata"]["name"] == "diddukewin"
+    assert deployment["spec"]["replicas"] == 1
+    assert deployment["spec"]["strategy"] == {"type": "Recreate"}
+    pod = deployment["spec"]["template"]
+    assert pod["metadata"]["annotations"]["checksum/config"]
+    container = pod["spec"]["containers"][0]
     assert container["image"] == f"galonsky/diddukewin@{DIGEST}"
     assert container["envFrom"][1] == {"secretRef": {"name": "ddw-credentials"}}
 

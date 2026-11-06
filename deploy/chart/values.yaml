@@ -6,19 +6,8 @@ image:
   digest: ''
   pullPolicy: IfNotPresent
 
-cronjob:
+deployment:
   name: diddukewin
-  schedule: '*/10 11-23,0-1 * * *'
-  timeZone: America/New_York
-  concurrencyPolicy: Forbid
-  startingDeadlineSeconds: 10
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
-  suspend: false
-
-job:
-  activeDeadlineSeconds: 18000
-  backoffLimit: 1
   terminationGracePeriodSeconds: 30
 
 configMapName: ddw-config

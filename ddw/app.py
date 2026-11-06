@@ -1,5 +1,6 @@
 import os
 import signal
+import sys
 import threading
 from datetime import datetime, timedelta
 from typing import Callable
@@ -7,10 +8,13 @@ from typing import Callable
 from ddw import cloudflare
 from ddw.clock import Clock
 from ddw.config import (
+    idle_poll_seconds,
+    in_active_window,
     live_poll_seconds,
     max_run_hours,
     pregame_grace_minutes,
     pregame_window_minutes,
+    seconds_until_active,
 )
 from ddw.data.ncaa.fetcher import NCAAThrottled
 from ddw.bluesky import skeeter
@@ -19,6 +23,7 @@ from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
 from ddw.twitter import tweeter
 from ddw.config import should_force_upload, should_skeet, should_toot, should_tweet
+from ddw.logging_config import configure_logging
 from ddw.models import GameDisplay, IGame
 from ddw.renderer import parse_last_known_game, render, render_state
 from ddw.uploader import SCORE_KEY, download, upload
@@ -31,7 +36,7 @@ if os.getenv("SENTRY_DSN"):
 
 
 logger = logging.getLogger()
-logging.basicConfig(level=logging.INFO)
+configure_logging()
 
 MAX_CONSECUTIVE_FAILURES = 5
 
@@ -131,10 +136,7 @@ def run(
         return
 
     clock = clock or Clock()
-    if sleep is None:
-        stop = threading.Event()
-        signal.signal(signal.SIGTERM, lambda *_: stop.set())
-        sleep = stop.wait
+    sleep = sleep or _sigterm_sleep()
     deadline = clock.now() + timedelta(hours=max_run_hours())
     active = False
     failures = 0
@@ -152,8 +154,7 @@ def run(
                 raise  # nothing live yet; fail like a normal cron run
             failures += 1
             logger.exception("Update failed during live game")
-            if os.getenv("SENTRY_DSN"):
-                sentry_sdk.capture_exception(e)
+            _report(e)
             if failures >= MAX_CONSECUTIVE_FAILURES:
                 logger.error("Too many consecutive failures, exiting")
                 raise
@@ -171,6 +172,84 @@ def run(
             return
 
 
+def serve(
+    clock: Clock | None = None,
+    sleep: Callable[[float], object] | None = None,
+) -> None:
+    """Run forever as a long-lived worker, so a deploy can replace the process
+    at any time, mid-game included: every iteration is stateless.
+
+    Outside the active hours with nothing live, sleep without calling out.
+    Inside them, look for a game every idle interval; while one is live or about
+    to tip off, poll at the live interval. Errors are reported and retried,
+    never fatal; after MAX_CONSECUTIVE_FAILURES in a row during a game, or once
+    a game has gone MAX_RUN_HOURS past its start, fall back to the idle schedule.
+    Returns only on SIGTERM (or when ``sleep`` returns True)."""
+    clock = clock or Clock()
+    sleep = sleep or _sigterm_sleep()
+    live = False
+    live_since: datetime | None = None
+    failures = 0
+    while True:
+        now = clock.now()
+        if not live and not in_active_window(now):
+            delay = min(idle_poll_seconds(), seconds_until_active(now))
+        else:
+            delay = idle_poll_seconds()
+            try:
+                game = run_update(force_upload=False)
+            except Exception as e:
+                logger.exception("Update failed")
+                _report(e)
+                if live:
+                    failures += 1
+                    if failures >= MAX_CONSECUTIVE_FAILURES:
+                        logger.error("Too many consecutive failures, going idle")
+                        live = False
+                    else:
+                        delay = _backoff_delay(e, failures)
+            else:
+                failures = 0
+                now = clock.now()
+                live = should_keep_running(game, now)
+                if not live:
+                    live_since = None  # game over or none: next one starts fresh
+                elif live_since is None:
+                    live_since = now
+                if live and _past_game_cap(game, live_since, now):
+                    logger.warning("Game past max run time, going idle")
+                    live = False
+                if live:
+                    delay = live_poll_seconds()
+        if not live:
+            failures = 0
+        if sleep(delay) is True:  # Event.wait returns True when signaled
+            logger.info("Stopping on SIGTERM")
+            return
+
+
+def _past_game_cap(
+    game: IGame | None, live_since: datetime | None, now: datetime
+) -> bool:
+    """A game still not final MAX_RUN_HOURS after it started (a stale or
+    suspended feed) stops getting live polling. Anchored on the listed start so
+    the cap survives pod replacement; falls back to when polling began."""
+    start = (game.get_start_time() if game else None) or live_since
+    return start is not None and now >= start + timedelta(hours=max_run_hours())
+
+
+def _sigterm_sleep() -> Callable[[float], bool]:
+    """A sleep that returns True early once SIGTERM arrives."""
+    stop = threading.Event()
+    signal.signal(signal.SIGTERM, lambda *_: stop.set())
+    return stop.wait
+
+
+def _report(error: Exception) -> None:
+    if os.getenv("SENTRY_DSN"):
+        sentry_sdk.capture_exception(error)
+
+
 def _backoff_delay(error: Exception, failures: int) -> float:
     if isinstance(error, NCAAThrottled):
         return error.retry_after or min(30 * 2 ** (failures - 1), 300)
@@ -182,4 +261,9 @@ def get_evaluator() -> IEvaluator:
 
 
 if __name__ == "__main__":
-    run()
+    # `once` (or FORCE_UPLOAD) is a one-off manual run; the default is the
+    # long-lived worker the Kubernetes Deployment runs.
+    if should_force_upload() or sys.argv[1:] == ["once"]:
+        run()
+    else:
+        serve()

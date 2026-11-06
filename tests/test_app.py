@@ -265,6 +265,119 @@ class TestRun:
         assert update.call_count == 1
 
 
+class TestServe:
+    """The long-lived worker: idle checks in the window, live polling in games."""
+
+    @pytest.fixture
+    def update(self, mocker):
+        return mocker.patch("ddw.app.run_update")
+
+    live = staticmethod(TestRun.live)
+    final = staticmethod(TestRun.final)
+
+    @staticmethod
+    def serve(start=NOW, max_sleeps=10):
+        """Run serve() on a fake clock that each sleep advances; stop (as if
+        SIGTERM arrived) after ``max_sleeps`` sleeps. Returns the delays."""
+        clock = FakeClock()
+        clock.current = start
+        sleeps = []
+
+        def sleep(seconds):
+            sleeps.append(seconds)
+            clock.current += timedelta(seconds=seconds)
+            return len(sleeps) >= max_sleeps
+
+        app.serve(clock, sleep)
+        return sleeps
+
+    def test_idles_when_no_game(self, update):
+        update.return_value = None
+        assert self.serve(max_sleeps=3) == [600, 600, 600]
+        assert update.call_count == 3
+        update.assert_called_with(force_upload=False)
+
+    def test_sleeps_outside_window_without_calling_out(self, update):
+        update.return_value = None
+        start = NOW.replace(hour=10, minute=55)
+        assert self.serve(start, max_sleeps=3) == [300, 600, 600]
+        assert update.call_count == 2  # at 11:00 and 11:10
+
+    def test_polls_live_then_returns_to_idle(self, update):
+        pregame = NCAAGame(
+            ResultType.NOT_YET,
+            "0-0",
+            game_state="P",
+            start_time=NOW + timedelta(minutes=5),
+        )
+        update.side_effect = [None, pregame, self.live(), self.final(), None]
+        start = NOW - timedelta(minutes=10)
+        assert self.serve(start, max_sleeps=5) == [600, 15, 15, 600, 600]
+
+    def test_keeps_polling_live_game_past_window_end(self, update):
+        update.return_value = self.live()
+        start = NOW.replace(hour=1, minute=59, second=50)
+        assert self.serve(start, max_sleeps=4) == [15, 15, 15, 15]
+        assert update.call_count == 4
+
+    def test_final_after_window_end_goes_quiet(self, update):
+        update.side_effect = [self.live(), self.final()]
+        start = NOW.replace(hour=1, minute=59, second=50)
+        assert self.serve(start, max_sleeps=3) == [15, 600, 600]
+        assert update.call_count == 2  # 02:10 is outside the window
+
+    def test_failures_never_exit(self, update):
+        update.side_effect = RuntimeError("down")
+        assert self.serve(max_sleeps=10) == [600] * 10
+
+    def test_live_failures_back_off_and_recover(self, update):
+        update.side_effect = [
+            self.live(),
+            NCAAThrottled(429),
+            NCAAThrottled(429, retry_after=7),
+            RuntimeError("blip"),
+            self.live(),
+        ]
+        assert self.serve(max_sleeps=5) == [15, 30, 7, 15, 15]
+
+    def test_persistent_live_failures_fall_back_to_idle(self, update):
+        update.side_effect = [self.live()] + [RuntimeError("down")] * 20
+        sleeps = self.serve(max_sleeps=10)
+        live_retries = app.MAX_CONSECUTIVE_FAILURES - 1
+        assert sleeps == [15] * (1 + live_retries) + [600] * (10 - 1 - live_retries)
+
+    def test_persistent_live_failures_go_quiet_outside_window(self, update):
+        update.side_effect = [self.live()] + [RuntimeError("down")] * 20
+        start = NOW.replace(hour=1, minute=59, second=0)
+        self.serve(start, max_sleeps=10)
+        # 1 live update + MAX failures, then nothing until 11:00
+        assert update.call_count == 1 + app.MAX_CONSECUTIVE_FAILURES
+
+    def test_game_past_cap_from_start_time_goes_idle(self, update):
+        stale = NCAAGame(
+            ResultType.NOT_YET, "40-40", start_time=NOW - timedelta(hours=4)
+        )
+        update.return_value = stale
+        assert self.serve(max_sleeps=3) == [600, 600, 600]
+
+    def test_game_without_start_time_capped_from_first_live_poll(
+        self, update, monkeypatch
+    ):
+        monkeypatch.setenv("MAX_RUN_HOURS", "1")
+        monkeypatch.setenv("LIVE_POLL_SECONDS", "1200")  # 20-minute polls
+        update.return_value = self.live()
+        assert self.serve(max_sleeps=5) == [1200, 1200, 1200, 600, 600]
+
+    def test_idle_throttle_waits_idle_interval(self, update):
+        update.side_effect = [NCAAThrottled(403), None]
+        assert self.serve(max_sleeps=2) == [600, 600]
+
+    def test_sigterm_stops(self, update):
+        update.return_value = self.live()
+        app.serve(FakeClock(), lambda s: True)
+        assert update.call_count == 1
+
+
 class TestRunUpdateLive:
     def test_pregame_is_not_uploaded(self, mocker):
         pregame = NCAAGame(ResultType.NOT_YET, "0-0", game_state="P")
