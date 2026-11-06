@@ -19,6 +19,8 @@ class JsonFormatter(logging.Formatter):
         }
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
+        if record.stack_info:
+            payload["stack"] = self.formatStack(record.stack_info)
         # Include anything passed via `extra=`.
         for key, value in record.__dict__.items():
             if key not in _STANDARD_ATTRS and key not in payload:

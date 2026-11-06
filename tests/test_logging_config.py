@@ -29,3 +29,12 @@ def test_includes_extra():
     rec = _record()
     rec.game_id = 42
     assert json.loads(JsonFormatter().format(rec))["game_id"] == 42
+
+
+def test_includes_stack_info():
+    rec = _record()
+    rec.stack_info = "Stack (most recent call last):\n  File x"
+    assert (
+        "Stack (most recent call last)"
+        in json.loads(JsonFormatter().format(rec))["stack"]
+    )
