@@ -181,10 +181,13 @@ def serve(
     Outside the active hours with nothing live, sleep without calling out.
     Inside them, look for a game every idle interval; while one is live or about
     to tip off, poll at the live interval. Errors are reported and retried,
-    never fatal. Returns only on SIGTERM (or when ``sleep`` returns True)."""
+    never fatal; after MAX_CONSECUTIVE_FAILURES in a row during a game, or once
+    a game has gone MAX_RUN_HOURS past its start, fall back to the idle schedule.
+    Returns only on SIGTERM (or when ``sleep`` returns True)."""
     clock = clock or Clock()
     sleep = sleep or _sigterm_sleep()
     live = False
+    live_since: datetime | None = None
     failures = 0
     while True:
         now = clock.now()
@@ -195,19 +198,43 @@ def serve(
             try:
                 game = run_update(force_upload=False)
             except Exception as e:
-                failures += 1
                 logger.exception("Update failed")
                 _report(e)
                 if live:
-                    delay = _backoff_delay(e, failures)
+                    failures += 1
+                    if failures >= MAX_CONSECUTIVE_FAILURES:
+                        logger.error("Too many consecutive failures, going idle")
+                        live = False
+                    else:
+                        delay = _backoff_delay(e, failures)
             else:
                 failures = 0
-                live = should_keep_running(game, clock.now())
+                now = clock.now()
+                live = should_keep_running(game, now)
+                if not live:
+                    live_since = None  # game over or none: next one starts fresh
+                elif live_since is None:
+                    live_since = now
+                if live and _past_game_cap(game, live_since, now):
+                    logger.warning("Game past max run time, going idle")
+                    live = False
                 if live:
                     delay = live_poll_seconds()
+        if not live:
+            failures = 0
         if sleep(delay) is True:  # Event.wait returns True when signaled
             logger.info("Stopping on SIGTERM")
             return
+
+
+def _past_game_cap(
+    game: IGame | None, live_since: datetime | None, now: datetime
+) -> bool:
+    """A game still not final MAX_RUN_HOURS after it started (a stale or
+    suspended feed) stops getting live polling. Anchored on the listed start so
+    the cap survives pod replacement; falls back to when polling began."""
+    start = (game.get_start_time() if game else None) or live_since
+    return start is not None and now >= start + timedelta(hours=max_run_hours())
 
 
 def _sigterm_sleep() -> Callable[[float], bool]:

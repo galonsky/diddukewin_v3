@@ -23,7 +23,8 @@ at any time, mid-game included, costs only the seconds the new pod takes to star
 | Game more than 12 minutes from tip-off | Same 10-minute check |
 | 12 minutes before tip-off until 45 minutes after the listed start, or live | Polls every 15 seconds, past the end of the active hours if needed |
 | Game just went final | Publishes the result, posts once, returns to the 10-minute check |
-| NCAA throttles or any error | Logs, reports to Sentry, backs off and retries; never exits |
+| NCAA throttles or any error | Logs, reports to Sentry and retries; never exits. During a game, throttles back off (Retry-After, else 30 s doubling to 5 min) and other errors retry at 15 s; after 5 failures in a row it falls back to the idle schedule above |
+| Game still not final `MAX_RUN_HOURS` (default 4) after its listed start | Treated as stale (suspended game, stuck feed): back to the idle schedule |
 
 SIGTERM stops the loop at its next sleep, so pod replacement is immediate.
 
@@ -109,7 +110,7 @@ Other supported non-sensitive environment settings include `SITE_URL`,
 `LIVE_POLL_SECONDS` (default 15), `IDLE_POLL_SECONDS` (default 600),
 `ACTIVE_START_HOUR` (default 11) and `ACTIVE_END_HOUR` (default 2, exclusive,
 wrapping past midnight; equal values mean always active), `PREGAME_WINDOW_MINUTES`,
-`PREGAME_GRACE_MINUTES`, `MAX_RUN_HOURS` (one-off runs only),
+`PREGAME_GRACE_MINUTES`, `MAX_RUN_HOURS` (default 4; caps live polling per game),
 `MIN_HOURS_BETWEEN_SKEETS`, `MIN_HOURS_BETWEEN_TOOTS`, and
 `MIN_HOURS_BETWEEN_TWEETS`. Omitted settings retain the defaults in the app code.
 Posting flags (`SKEETING_ENABLED`, `TOOTING_ENABLED`, `TWEETING_ENABLED`) and
