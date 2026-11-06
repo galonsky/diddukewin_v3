@@ -1,0 +1,37 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: test
+  namespace: diddukewin-kargo
+spec:
+  requestedFreight:
+    - origin:
+        kind: Warehouse
+        name: diddukewin
+      sources:
+        direct: true
+  promotionTemplate:
+    spec:
+      steps:
+        - uses: argocd-update
+          config:
+            apps:
+              - name: diddukewin-kargo
+                namespace: argocd
+                sources:
+                  - repoURL: https://github.com/galonsky/diddukewin_v3.git
+                    desiredRevision: ${{ commitFrom("https://github.com/galonsky/diddukewin_v3.git", warehouse("diddukewin")).ID }}
+                    updateTargetRevision: true
+                    helm:
+                      images:
+                        - key: image.digest
+                          value: ${{ imageFrom("docker.io/galonsky/diddukewin", warehouse("diddukewin")).Digest }}
+        - uses: argocd-wait
+          config:
+            apps:
+              - name: diddukewin-kargo
+                namespace: argocd
+                waitFor:
+                  - health
+                  - sync
+                  - operation

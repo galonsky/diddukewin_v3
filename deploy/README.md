@@ -1,13 +1,14 @@
 # Kubernetes deployment
 
-`deploy/chart` is the source of the app's Kubernetes resources. The chart manages
-exactly:
+`deploy/chart` is the source of the app's Kubernetes resources. The production
+Argo CD Application manages exactly:
 
-- `Deployment/default/diddukewin` (one replica, `Recreate` strategy)
-- `ConfigMap/default/ddw-config`
+- `Deployment/diddukewin/diddukewin` (one replica, `Recreate` strategy)
+- `ConfigMap/diddukewin/ddw-config`
 
 The manually managed Secrets `ddw-credentials` and `ddw-cloudflare` are referenced
-by the chart but are not created, updated, or deleted by Helm.
+by the chart but are not created, updated, or deleted by Argo CD. They must exist
+in the target namespace before the Deployment starts.
 
 ## Runtime behaviour
 
@@ -63,32 +64,66 @@ gaps because CircleCI numbers other jobs too.
 
 ## Deploy and roll back
 
-Deploys go through Kargo and Argo CD. Their resources (the Kargo Warehouse and
-Stage, and the Argo CD Application) are configured in the cluster, not in this
-repo.
+Kargo and Argo CD resources for this deployment are recorded in [`kargo/`](kargo/)
+and [`argocd/application.yaml`](argocd/application.yaml).
+The Kargo Warehouse watches `master` and Docker Hub for matching commit-SHA image
+tags. It creates Freight automatically; promotion to the `test` Stage is manual.
+That Stage currently deploys to the production namespace `diddukewin`; there is
+no separate test namespace.
 
-1. A Kargo Warehouse subscribes to the OCI chart above. Each new chart version
-   appears as Freight.
-2. Promote the Freight in Kargo. Argo CD then syncs the Helm release
-   `diddukewin-default` in namespace `default` to that chart version, using the
-   chart's own values.
-3. Argo CD updates the Deployment, and Kubernetes replaces the pod (old pod
-   stopped first, then the new one started). This is safe during a live game.
+Promoting Freight updates the `diddukewin-kargo` Argo CD Application to that Git
+commit and image digest. Argo CD auto-syncs it into the production namespace
+`diddukewin`. Kargo then waits for the Application's operation to finish and for
+it to report both Healthy and Synced before the Promotion succeeds. To roll back,
+manually promote an earlier Freight.
 
-To roll back, promote an earlier Freight. Each chart version carries its image
-digest and configuration together. Keep ordinary configuration in this repo and
-publish a new release for configuration changes rather than overriding values in
-Argo CD or Kargo.
+Argo CD automated pruning is disabled. If a chart change removes a Kubernetes
+resource, the Application will need an Argo sync with prune before Kargo's
+healthy-and-synced wait can complete. Review deletions carefully before pruning.
 
-The first promotion of chart 0.2.0 or later replaces the old `CronJob/diddukewin`
-with the Deployment. If the Argo CD Application doesn't prune, delete the CronJob
-by hand (`kubectl -n default delete cronjob diddukewin`) so the two never publish
-at the same time. Deleting it also stops any Job it's running, so do that first
-promotion outside a game.
+## Set up on a cluster
+
+Install Argo CD and Kargo first; this repo contains the Diddukewin resources, not
+the controllers or their cluster-specific authentication settings. The GitHub repo
+and Docker Hub image are public, so no repository credentials are required. Create
+`diddukewin` and its manually
+managed Secrets before syncing the Application. `ddw-credentials` is required;
+`ddw-cloudflare` is optional. Use the placeholders in `secrets.example.yaml` as a
+key reference only; never apply that file or commit real values.
+
+The Application manifest starts from a known healthy, immutable commit and image
+digest. It is intentionally not pointed at `master`: with auto-sync enabled, that
+would deploy commits before a manual Kargo promotion. Once Kargo is configured,
+promotions move the Application to the selected commit and digest. Apply this
+manifest once to bootstrap the Application; reapplying it later resets the
+revision and digest to the bootstrap release.
+
+Apply the Application and Kargo resources in this order:
+
+```sh
+kubectl create namespace diddukewin --dry-run=client -o yaml | kubectl apply -f -
+# Create this local env file with the required credentials; never commit it.
+kubectl -n diddukewin create secret generic ddw-credentials \
+  --from-env-file=/secure/path/ddw-credentials.env
+# Optional; create only if Cloudflare cache purging is configured.
+kubectl -n diddukewin create secret generic ddw-cloudflare \
+  --from-env-file=/secure/path/ddw-cloudflare.env
+kubectl apply -f deploy/argocd/application.yaml
+kubectl apply -f deploy/kargo/project.yaml
+kubectl wait --for=condition=Ready project.kargo.akuity.io/diddukewin-kargo --timeout=2m
+kubectl apply -f deploy/kargo/project-config.yaml
+kubectl apply -f deploy/kargo/warehouse.yaml
+kubectl apply -f deploy/kargo/stage.yaml
+```
+
+Wait for the Argo Application to become Healthy before promoting Freight. The
+Application manifest includes the required authorization annotation
+`kargo.akuity.io/authorized-stage: diddukewin-kargo:test`. These manifests contain
+no credentials; they reference the public Git and Docker Hub repositories.
 
 ## Configuration and dependencies
 
-Edit `chart/values.yaml` for ordinary configuration and defaults. Current settings:
+Edit `deploy/chart/values.yaml` for ordinary configuration and defaults. Current settings:
 
 | Setting | Purpose |
 | --- | --- |
@@ -125,8 +160,8 @@ the checkout with mode 0600 and use `kubectl create secret generic ... --from-en
 For this existing cluster, update individual values locally with:
 
 ```sh
-kubectl -n default edit secret ddw-credentials
-kubectl -n default edit secret ddw-cloudflare
+kubectl -n diddukewin edit secret ddw-credentials
+kubectl -n diddukewin edit secret ddw-cloudflare
 ```
 
 The `data` values shown by `kubectl edit secret` are base64-encoded. Base64 is not
@@ -151,12 +186,12 @@ to avoid accidental overrides.
 
 ## Chart changes and local validation
 
-Edit `chart/templates` and `chart/values.yaml`, then commit to master through the
+Edit `deploy/chart/templates` and `deploy/chart/values.yaml`, then commit to master through the
 normal review workflow. CI packages the changed chart automatically.
 
 ```sh
 helm lint deploy/chart
-helm template diddukewin-default deploy/chart --namespace default > /tmp/diddukewin.yaml
+helm template diddukewin-kargo deploy/chart --namespace diddukewin > /tmp/diddukewin.yaml
 kubectl apply --dry-run=server -f /tmp/diddukewin.yaml -o name
 uv run --frozen pytest tests deploy/tests
 ```
@@ -166,32 +201,22 @@ run the actual Helm CLI. `deploy/dist/` is ignored by Git. The unmodified source
 chart retains a tagged fallback image for local inspection; production release
 packages always embed a digest.
 
-For recovery when Kargo or Argo CD is unavailable, install a published release
-directly. Argo CD reverts this on its next sync, so promote the same version in
-Kargo once it's back.
-
-```sh
-helm upgrade --install diddukewin-default \
-  oci://registry-1.docker.io/galonsky/diddukewin-chart \
-  --version 0.0.BUILD_NUMBER --namespace default --reset-values
-```
-
-Replace the example version with an actual published release. Resetting values
-uses that release's embedded configuration and image digest. Manually managed
-Secrets remain independent.
+Use Kargo and Argo CD for deployment and rollback. Avoid installing a separate
+local Helm release against the production namespace, as that would create another
+owner for the same resources.
 
 ## Verification and operations
 
 ```sh
-kubectl -n default get deploy diddukewin
-kubectl -n default logs deploy/diddukewin -f
+kubectl -n diddukewin get deploy diddukewin
+kubectl -n diddukewin logs deploy/diddukewin -f
 ```
 
 **Check now.** To make the worker look for a game immediately (or pick up changed
 Secrets), delete its pod; the Deployment starts a fresh one:
 
 ```sh
-kubectl -n default delete pod -l app.kubernetes.io/name=diddukewin
+kubectl -n diddukewin delete pod -l app.kubernetes.io/name=diddukewin
 ```
 
 Avoid `kubectl rollout restart`: it edits the pod template, which Argo CD reports
@@ -201,7 +226,7 @@ as drift.
 inside the pod. This publishes real content; posting is skipped for a last known game.
 
 ```sh
-kubectl -n default exec deploy/diddukewin -- \
+kubectl -n diddukewin exec deploy/diddukewin -- \
   env FORCE_UPLOAD=1 uv run --no-sync python ddw/app.py once
 ```
 
@@ -215,5 +240,6 @@ has already been applied on elitedesk. Backups contain credentials; protect them
 include the manual Secrets in off-machine backups. Recover missing values into
 Secrets, rather than restoring the old credential-bearing ConfigMap.
 
-Deleting the Argo CD Application with resource pruning removes its Deployment and
-ConfigMap. Manually managed Secrets remain and must be handled separately.
+Deleting the Argo CD Application does not delete resources while automated pruning
+is disabled. Review and remove the Deployment and ConfigMap separately if retiring
+the application. Manually managed Secrets must also be handled separately.

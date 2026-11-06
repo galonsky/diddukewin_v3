@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: diddukewin-kargo
+  namespace: argocd
+  annotations:
+    kargo.akuity.io/authorized-stage: diddukewin-kargo:test
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/galonsky/diddukewin_v3.git
+    # Bootstrap at a known healthy release. Do not use the master branch here:
+    # Argo auto-sync would deploy each commit before its manual Kargo promotion.
+    # Apply this manifest once; Kargo owns targetRevision and image.digest afterward.
+    targetRevision: 34704e7b71e2f9fefdcc449246d4039f9a6b713d
+    path: deploy/chart
+    helm:
+      releaseName: diddukewin-kargo
+      parameters:
+        - name: image.digest
+          value: sha256:f1019507bec7bd9c428d5e3945eaafee8aaae422af7a7c8d4c390fac029d8224
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: diddukewin
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
