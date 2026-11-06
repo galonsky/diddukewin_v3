@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Pinned, checksum-verified Helm 3 for CI; packages are compatible with Devtron.
+# Pinned, checksum-verified Helm 3 for CI; packages are what Kargo and Argo CD deploy.
 helm_version=3.22.1
 download_dir=$(mktemp -d)
 trap 'rm -rf "$download_dir"' EXIT
