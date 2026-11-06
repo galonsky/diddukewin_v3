@@ -1,0 +1,10 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: ProjectConfig
+metadata:
+  name: diddukewin-kargo
+  namespace: diddukewin-kargo
+spec:
+  promotionPolicies:
+    - stageSelector:
+        name: test
+      autoPromotionEnabled: false

@@ -1,0 +1,23 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: diddukewin
+  namespace: diddukewin-kargo
+spec:
+  interval: 5m
+  freightCreationPolicy: Automatic
+  subscriptions:
+    - git:
+        repoURL: https://github.com/galonsky/diddukewin_v3.git
+        branch: master
+        discoveryLimit: 20
+    - image:
+        repoURL: docker.io/galonsky/diddukewin
+        imageSelectionStrategy: NewestBuild
+        allowTagsRegexes:
+          - '^sha-[0-9a-f]{40}-[0-9]+$'
+        discoveryLimit: 20
+        cacheByTag: true
+  freightCreationCriteria:
+    expression: |
+      imageFrom('docker.io/galonsky/diddukewin').Tag matches 'sha-' + commitFrom('https://github.com/galonsky/diddukewin_v3.git').ID + '-[0-9]+'
