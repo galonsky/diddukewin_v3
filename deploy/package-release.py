@@ -55,8 +55,8 @@ def package_release(
             }
         )
         values_path.write_text(yaml.safe_dump(values, sort_keys=False))
-        # Published charts deploy their embedded digest. The old external-image
-        # descriptor belongs only to the legacy Devtron app workflow.
+        # Published charts deploy their embedded digest; drop any external-image
+        # descriptor left over from an older deploy workflow.
         (chart / ".image_descriptor_template.json").unlink(missing_ok=True)
         subprocess.run(["helm", "lint", str(chart)], check=True)
         subprocess.run(
