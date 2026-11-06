@@ -86,6 +86,30 @@
             font-weight: 600;
             letter-spacing: 0.04em;
             line-height: 1.3;
+            padding: 0 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .score-updated {
+            animation: score-flash 4s ease-out forwards, score-pulse 1s ease-out;
+        }
+
+        @keyframes score-flash {
+            0%, 35% {
+                background: #d6e8ff;
+                color: #075ec8;
+                box-shadow: 0 0 0 3px #75afff;
+            }
+            100% {
+                background: transparent;
+                color: #303b49;
+                box-shadow: 0 0 0 0 transparent;
+            }
+        }
+
+        @keyframes score-pulse {
+            from { transform: scale(1.18); }
+            to { transform: scale(1); }
         }
 
         .social-link {
@@ -126,6 +150,10 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+            .score-updated {
+                animation: score-flash 4s ease-out forwards;
+            }
+
             .social-link {
                 transition: none;
             }
@@ -152,6 +180,9 @@
             var main = document.querySelector("main");
             var result = document.querySelector(".result");
             var score = document.querySelector(".score");
+            score.addEventListener("animationend", function (e) {
+                if (e.animationName === "score-flash") { score.classList.remove("score-updated"); }
+            });
             var timer = null;
             var stopped = false;
 
@@ -159,7 +190,13 @@
                 main.className = state.css_class;
                 result.textContent = state.result_text;
                 var text = state.link_text.trim();
+                var changed = text !== score.textContent.trim();
                 score.textContent = text;
+                if (changed) {
+                    score.classList.remove("score-updated");
+                    void score.offsetWidth;
+                    score.classList.add("score-updated");
+                }
                 score.setAttribute("aria-label", "Game result: " + text);
                 if (state.result !== "NOT_YET") {
                     stopped = true;
