@@ -98,7 +98,7 @@ class TestRunUpdate:
 
         download_mock.assert_called_once_with()
         parse_mock.assert_called_once_with("old html")
-        mock_render.assert_called_once()
+        mock_render.assert_called()
         page_upload = mock_upload.call_args_list[-2]
         assert page_upload.args == (mock_render.return_value,)
         assert page_upload.kwargs["force"] is True
@@ -540,6 +540,30 @@ class TestSocialCards:
 
         keys = [c.kwargs.get("key") for c in uploads.call_args_list]
         assert keys.count("cards/default.png") == 1
+
+    def test_forced_upload_of_last_known_game_without_card_builds_one(
+        self, mocker, uploads
+    ):
+        mocker.patch.object(NCAAEvaluator, "find_current_game", return_value=None)
+        mocker.patch("ddw.app.download", return_value="<html>old page</html>")
+        mocker.patch(
+            "ddw.app.parse_last_known_game",
+            return_value=LastKnownGame(ResultType.WIN, "82-75"),
+        )
+        skeet = mocker.patch("ddw.app.skeeter.post_skeet")
+
+        app.run_update(force_upload=True)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        slug = keys[0].split("/")[1]
+        assert keys == [
+            f"g/{slug}/card.png",
+            f"g/{slug}/index.html",
+            "index.html",
+            "score.json",
+        ]
+        assert f"/g/{slug}/card.png" in uploads.call_args_list[2].args[0]
+        skeet.assert_not_called()
 
     def test_forced_upload_of_last_known_game_keeps_existing_card(
         self, mocker, uploads
