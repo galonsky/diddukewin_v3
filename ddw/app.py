@@ -125,9 +125,10 @@ def run_update(force_upload: bool | None = None) -> IGame | None:
     slug: str | None = None
     if game.has_ended():
         if using_last_known_game:
-            # No new final result to publish; keep the card the page already has.
+            # Keep the card the page already has; only build one when the page
+            # predates cards (its date is approximate: IGame has no start time).
             slug = slug_from_page(last_known_html or "")
-        else:
+        if not slug:
             # The card is optional, the result is not: if it fails, fall back
             # to the generic card so index.html still gets the final result.
             try:
