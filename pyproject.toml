@@ -10,7 +10,7 @@ dependencies = [
     "python-twitter>=3.5,<4",
     "sentry-sdk>=2.73.0,<3",
     "atproto>=0.0.73,<0.1",
-    "pillow>=12,<13",
+    "pillow>=13.0.0,<14",
 ]
 
 [dependency-groups]
