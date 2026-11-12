@@ -1,5 +1,6 @@
 from ddw.data.ncaa.NCAAGame import NCAAGame
 from ddw.models import GameDisplay, LastKnownGame, ResultType
+from ddw.social import final_meta
 from ddw.renderer import parse_last_known_game, render
 
 
@@ -23,6 +24,33 @@ class TestRender:
         assert "http://diddukewin.com" not in rendered
         assert 'src="http://' not in rendered
         assert '<!--ddw-state:{"result":"LOSS","score":"67-70"}-->' in rendered
+
+    def test_default_social_meta(self):
+        rendered = render(GameDisplay(NCAAGame(ResultType.NOT_YET, "10-8")))
+
+        assert "<title>Did Duke Win?</title>" in rendered
+        assert (
+            "content=https://diddukewin.com/cards/default.png property=og:image"
+            in rendered
+        )
+        assert "content=summary_large_image name=twitter:card" in rendered
+
+    def test_final_social_meta(self):
+        display = GameDisplay(NCAAGame(ResultType.WIN, "82-75"))
+        social = final_meta(display, "20261112-abc123", permalink=True)
+
+        rendered = render(display, social)
+
+        assert "<title>Did Duke Win? Yes</title>" in rendered
+        assert 'content="W 82-75" property=og:description' in rendered
+        assert (
+            "content=https://diddukewin.com/g/20261112-abc123/ property=og:url"
+            in rendered
+        )
+        assert (
+            "content=https://diddukewin.com/g/20261112-abc123/card.png "
+            "name=twitter:image" in rendered
+        )
 
     def test_parses_last_known_game_from_state_marker(self):
         game = LastKnownGame(ResultType.WIN, "80-71")

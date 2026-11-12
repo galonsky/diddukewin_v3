@@ -40,6 +40,9 @@ class TestMd5Content:
         hexdigest = md5_content(content)
         assert len(hexdigest) == 32
 
+    def test_works_on_bytes(self):
+        assert md5_content(b"foobar") == md5_content("foobar")
+
 
 class TestShouldUploadNew:
     @pytest.fixture
