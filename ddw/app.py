@@ -128,13 +128,19 @@ def run_update(force_upload: bool | None = None) -> IGame | None:
             # No new final result to publish; keep the card the page already has.
             slug = slug_from_page(last_known_html or "")
         else:
-            slug = game_slug(game, Clock().now())
-            card_png = render_card(
-                game.get_result_type(),
-                game_display.result_text,
-                game_display.link_text,
-            )
-            publish_game_page(game_display, slug, card_png, force_upload)
+            # The card is optional, the result is not: if it fails, fall back
+            # to the generic card so index.html still gets the final result.
+            try:
+                slug = game_slug(game, Clock().now())
+                card_png = render_card(
+                    game.get_result_type(),
+                    game_display.result_text,
+                    game_display.link_text,
+                )
+                publish_game_page(game_display, slug, card_png, force_upload)
+            except Exception:
+                logger.exception("Could not publish the game card, using default")
+                slug = card_png = None
     if slug:
         social = final_meta(game_display, slug, permalink=False)
     else:

@@ -3,7 +3,7 @@
 import hashlib
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from ddw.cloudflare import site_url
@@ -12,6 +12,8 @@ from ddw.models import GameDisplay, IGame
 DEFAULT_TITLE = "Did Duke Win?"
 DEFAULT_DESCRIPTION = "The latest Duke basketball result, at a glance."
 DEFAULT_CARD_KEY = "cards/default.png"
+# The evaluator keeps returning a finished game until 06:00 ET.
+FINISHED_GAME_CUTOFF = timedelta(hours=6)
 PERMALINK_CACHE_CONTROL = "public, max-age=31536000, immutable"
 
 
@@ -27,8 +29,10 @@ class SocialMeta:
 def game_slug(game: IGame, now: datetime) -> str:
     """Stable id for a finished game: its date plus a hash of the result.
 
-    IGame carries no game id, so date and final score stand in for one."""
-    start = game.get_start_time() or now
+    IGame carries no game id, so date and final score stand in for one. Without
+    a start time the date comes from `now`, shifted back by the evaluator's
+    06:00 cutoff for a finished game, so polls after midnight keep the slug."""
+    start = game.get_start_time() or now - FINISHED_GAME_CUTOFF
     day = start.astimezone(ZoneInfo("America/New_York")).strftime("%Y%m%d")
     digest = hashlib.md5(
         f"{game.get_result_type().name}:{game.get_score()}".encode()

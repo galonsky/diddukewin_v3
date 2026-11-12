@@ -482,6 +482,40 @@ class TestSocialCards:
         assert link_card.description == "W 82-75"
         assert link_card.image_png.startswith(b"\x89PNG")
 
+    def test_card_failure_still_publishes_the_result(self, mocker, uploads):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        mocker.patch("ddw.app.render_card", side_effect=RuntimeError("boom"))
+        skeet = mocker.patch("ddw.app.skeeter.post_skeet")
+        mocker.patch("ddw.app.should_skeet", return_value=True)
+
+        app.run_update(force_upload=False)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        assert keys == ["cards/default.png", "index.html", "score.json"]
+        assert "<h1 class=result>YES</h1>" in uploads.call_args_list[1].args[0]
+        assert skeet.call_args.args[1] is None
+
+    def test_page_upload_failure_still_publishes_the_result(self, mocker):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        calls = []
+
+        def flaky_upload(content, **kwargs):
+            key = kwargs.get("key", "index.html")
+            calls.append(key)
+            if key.startswith("g/"):
+                raise RuntimeError("s3 down")
+            return True
+
+        mocker.patch("ddw.app.upload", side_effect=flaky_upload)
+
+        app.run_update(force_upload=False)
+
+        assert "index.html" in calls and "score.json" in calls
+
     def test_live_game_uploads_no_game_card(self, mocker, uploads):
         mocker.patch.object(
             NCAAEvaluator,

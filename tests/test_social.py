@@ -28,7 +28,13 @@ class TestGameSlug:
         assert game_slug(game(start=start), NOW).startswith("20261112-")
 
     def test_falls_back_to_now(self):
-        assert game_slug(game(), NOW).startswith("20261113-")
+        afternoon = datetime(2026, 11, 13, 15, 0, tzinfo=NY)
+        assert game_slug(game(), afternoon).startswith("20261113-")
+
+    def test_fallback_is_stable_across_midnight_until_the_cutoff(self):
+        evening = datetime(2026, 11, 12, 22, 0, tzinfo=NY)
+        after_midnight = datetime(2026, 11, 13, 1, 30, tzinfo=NY)
+        assert game_slug(game(), evening) == game_slug(game(), after_midnight)
 
     def test_is_stable_and_depends_on_result(self):
         assert game_slug(game(), NOW) == game_slug(game(), NOW)
