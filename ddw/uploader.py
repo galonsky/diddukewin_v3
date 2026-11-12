@@ -30,20 +30,20 @@ def download(bucket: str = BUCKET_NAME, key: str = KEY) -> str | None:
         return None
 
 
-def md5_content(content: str) -> str:
+def md5_content(content: str | bytes) -> str:
     md5 = hashlib.md5()
-    md5.update(content.encode("utf-8"))
+    md5.update(content if isinstance(content, bytes) else content.encode("utf-8"))
     return md5.hexdigest()
 
 
-def should_upload_new(content: str, bucket: str, key: str) -> bool:
+def should_upload_new(content: str | bytes, bucket: str, key: str) -> bool:
     head = head_object(bucket, key)
     etag = head.get("ETag", "").strip('"')  # s3 leaves double quotes in
     return (not etag) or md5_content(content) != etag
 
 
 def upload(
-    content: str,
+    content: str | bytes,
     bucket: str = BUCKET_NAME,
     key: str = KEY,
     force: bool = False,

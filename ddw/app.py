@@ -17,7 +17,8 @@ from ddw.config import (
     seconds_until_active,
 )
 from ddw.data.ncaa.fetcher import NCAAThrottled
-from ddw.bluesky import skeeter
+from ddw.bluesky import LinkCard, skeeter
+from ddw.card import render_card, render_default_card
 from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.evaluator import IEvaluator
 from ddw.mastodon import tooter
@@ -26,6 +27,18 @@ from ddw.config import should_force_upload, should_skeet, should_toot, should_tw
 from ddw.logging_config import configure_logging
 from ddw.models import GameDisplay, IGame
 from ddw.renderer import parse_last_known_game, render, render_state
+from ddw.social import (
+    DEFAULT_CARD_KEY,
+    PERMALINK_CACHE_CONTROL,
+    card_key,
+    default_meta,
+    final_meta,
+    game_slug,
+    permalink_key,
+    permalink_url,
+    result_title,
+    slug_from_page,
+)
 from ddw.uploader import SCORE_KEY, download, upload
 import logging
 
@@ -41,6 +54,46 @@ configure_logging()
 MAX_CONSECUTIVE_FAILURES = 5
 
 
+_default_card_published = False
+
+
+def publish_default_card(force: bool) -> None:
+    """The generic card never changes, so check it once per process."""
+    global _default_card_published
+    if _default_card_published and not force:
+        return
+    upload(
+        render_default_card(),
+        key=DEFAULT_CARD_KEY,
+        force=force,
+        content_type="image/png",
+        cache_control=cloudflare.cache_control(3600),
+    )
+    _default_card_published = True
+
+
+def publish_game_page(
+    game_display: GameDisplay, slug: str, card_png: bytes, force: bool
+) -> None:
+    """Upload a finished game's card and a frozen page with its own URL, so a
+    shared link never shows a card that was cached for another game. Both are
+    immutable, so nothing needs purging. The card goes first so the page never
+    points at an image that isn't there yet."""
+    upload(
+        card_png,
+        key=card_key(slug),
+        force=force,
+        content_type="image/png",
+        cache_control=PERMALINK_CACHE_CONTROL,
+    )
+    upload(
+        render(game_display, final_meta(game_display, slug, permalink=True)),
+        key=permalink_key(slug),
+        force=force,
+        cache_control=PERMALINK_CACHE_CONTROL,
+    )
+
+
 def run_update(force_upload: bool | None = None) -> IGame | None:
     """Do one update. Returns the game found (possibly pregame), if any."""
     force_upload = should_force_upload() if force_upload is None else force_upload
@@ -51,6 +104,7 @@ def run_update(force_upload: bool | None = None) -> IGame | None:
         # Nothing to show before tip-off; the previous result stays up.
         pregame, game = game, None
     using_last_known_game = False
+    last_known_html: str | None = None
     if not game:
         if not force_upload:
             logger.info("No game found, exiting")
@@ -67,7 +121,32 @@ def run_update(force_upload: bool | None = None) -> IGame | None:
 
     logger.info(f"Found current game: {game}")
     game_display = GameDisplay(game)
-    rendered = render(game_display)
+    card_png: bytes | None = None
+    slug: str | None = None
+    if game.has_ended():
+        if using_last_known_game:
+            # No new final result to publish; keep the card the page already has.
+            slug = slug_from_page(last_known_html or "")
+        else:
+            # The card is optional, the result is not: if it fails, fall back
+            # to the generic card so index.html still gets the final result.
+            try:
+                slug = game_slug(game, Clock().now())
+                card_png = render_card(
+                    game.get_result_type(),
+                    game_display.result_text,
+                    game_display.link_text,
+                )
+                publish_game_page(game_display, slug, card_png, force_upload)
+            except Exception:
+                logger.exception("Could not publish the game card, using default")
+                slug = card_png = None
+    if slug:
+        social = final_meta(game_display, slug, permalink=False)
+    else:
+        publish_default_card(force_upload)
+        social = default_meta()
+    rendered = render(game_display, social)
     changed = [
         upload(
             rendered,
@@ -101,7 +180,17 @@ def run_update(force_upload: bool | None = None) -> IGame | None:
             logger.info("Not tweeting since tweeting disabled")
 
         if should_skeet():
-            skeeter.post_skeet(game_display.result_and_score)
+            link_card = (
+                LinkCard(
+                    url=permalink_url(slug),
+                    title=result_title(game_display),
+                    description=game_display.link_text,
+                    image_png=card_png,
+                )
+                if slug and card_png
+                else None
+            )
+            skeeter.post_skeet(game_display.result_and_score, link_card)
         else:
             logger.info("Not skeeting since skeeting disabled")
     else:

@@ -5,6 +5,7 @@ from typing import Optional
 from minify_html import minify
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from ddw.social import SocialMeta, default_meta
 from ddw.models import GameDisplay, IGame, LastKnownGame, ResultType
 
 env = Environment(
@@ -12,9 +13,12 @@ env = Environment(
 )
 
 
-def render(game_display: GameDisplay) -> str:
+def render(game_display: GameDisplay, social: SocialMeta | None = None) -> str:
     template = env.get_template("index.html")
-    rendered = minify(template.render(game_display=game_display), keep_comments=True)
+    rendered = minify(
+        template.render(game_display=game_display, social=social or default_meta()),
+        keep_comments=True,
+    )
     state = json.dumps(
         {
             "result": game_display.game.get_result_type().name,

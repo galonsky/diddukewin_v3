@@ -1,9 +1,18 @@
 import pytest
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from ddw import app
 from ddw.app import run_update
 from ddw.data.ncaa.NCAAGame import NCAAGame
 from ddw.data.ncaa.evaluator import NCAAEvaluator
 from ddw.models import LastKnownGame, ResultType
+
+
+@pytest.fixture(autouse=True)
+def reset_default_card_flag(monkeypatch):
+    monkeypatch.setattr(app, "_default_card_published", False)
 
 
 class TestRunUpdate:
@@ -90,8 +99,9 @@ class TestRunUpdate:
         download_mock.assert_called_once_with()
         parse_mock.assert_called_once_with("old html")
         mock_render.assert_called_once()
-        assert mock_upload.call_args_list[0].args == (mock_render.return_value,)
-        assert mock_upload.call_args_list[0].kwargs["force"] is True
+        page_upload = mock_upload.call_args_list[-2]
+        assert page_upload.args == (mock_render.return_value,)
+        assert page_upload.kwargs["force"] is True
 
     def test_force_option_without_last_known_game_does_not_upload(
         self, mocker, mock_evaluator, mock_render, mock_upload
@@ -395,8 +405,9 @@ class TestRunUpdateLive:
         upload_mock = mocker.patch("ddw.app.upload", return_value=True)
         purge = mocker.patch("ddw.app.cloudflare.purge_urls")
         app.run_update(force_upload=False)
-        assert upload_mock.call_count == 2
-        assert upload_mock.call_args_list[1].kwargs["key"] == "score.json"
+        assert upload_mock.call_count == 3
+        assert upload_mock.call_args_list[0].kwargs["key"] == "cards/default.png"
+        assert upload_mock.call_args_list[2].kwargs["key"] == "score.json"
         purge.assert_called_once()
 
     def test_no_purge_when_unchanged(self, mocker):
@@ -409,3 +420,142 @@ class TestRunUpdateLive:
         purge = mocker.patch("ddw.app.cloudflare.purge_urls")
         app.run_update(force_upload=False)
         purge.assert_not_called()
+
+
+class TestSocialCards:
+    @pytest.fixture
+    def uploads(self, mocker):
+        return mocker.patch("ddw.app.upload", return_value=True)
+
+    @pytest.fixture
+    def skeet(self, mocker):
+        mocker.patch("ddw.app.should_skeet", return_value=True)
+        mocker.patch("ddw.app.should_toot", return_value=False)
+        mocker.patch("ddw.app.should_tweet", return_value=False)
+        return mocker.patch("ddw.app.skeeter.post_skeet")
+
+    def final_game(self):
+        return NCAAGame(
+            ResultType.WIN,
+            "82-75",
+            start_time=datetime(
+                2026, 11, 12, 19, 0, tzinfo=ZoneInfo("America/New_York")
+            ),
+        )
+
+    def test_final_game_uploads_card_then_permalink_then_homepage(
+        self, mocker, uploads, skeet
+    ):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        app.run_update(force_upload=False)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        slug = keys[0].split("/")[1]
+        assert keys == [
+            f"g/{slug}/card.png",
+            f"g/{slug}/index.html",
+            "index.html",
+            "score.json",
+        ]
+        card = uploads.call_args_list[0]
+        assert card.args[0].startswith(b"\x89PNG")
+        assert card.kwargs["content_type"] == "image/png"
+        permalink_html = uploads.call_args_list[1].args[0]
+        assert f"https://diddukewin.com/g/{slug}/" in permalink_html
+        assert "<title>Did Duke Win? Yes</title>" in permalink_html
+        homepage_html = uploads.call_args_list[2].args[0]
+        assert f"https://diddukewin.com/g/{slug}/card.png" in homepage_html
+        assert "content=https://diddukewin.com/ property=og:url" in homepage_html
+
+    def test_final_game_skeets_permalink_with_card(self, mocker, uploads, skeet):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        app.run_update(force_upload=False)
+
+        text, link_card = skeet.call_args.args
+        assert text == "YES. 82-75"
+        assert link_card.url.startswith("https://diddukewin.com/g/20261112-")
+        assert link_card.title == "Did Duke Win? Yes"
+        assert link_card.description == "W 82-75"
+        assert link_card.image_png.startswith(b"\x89PNG")
+
+    def test_card_failure_still_publishes_the_result(self, mocker, uploads):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        mocker.patch("ddw.app.render_card", side_effect=RuntimeError("boom"))
+        skeet = mocker.patch("ddw.app.skeeter.post_skeet")
+        mocker.patch("ddw.app.should_skeet", return_value=True)
+
+        app.run_update(force_upload=False)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        assert keys == ["cards/default.png", "index.html", "score.json"]
+        assert "<h1 class=result>YES</h1>" in uploads.call_args_list[1].args[0]
+        assert skeet.call_args.args[1] is None
+
+    def test_page_upload_failure_still_publishes_the_result(self, mocker):
+        mocker.patch.object(
+            NCAAEvaluator, "find_current_game", return_value=self.final_game()
+        )
+        calls = []
+
+        def flaky_upload(content, **kwargs):
+            key = kwargs.get("key", "index.html")
+            calls.append(key)
+            if key.startswith("g/"):
+                raise RuntimeError("s3 down")
+            return True
+
+        mocker.patch("ddw.app.upload", side_effect=flaky_upload)
+
+        app.run_update(force_upload=False)
+
+        assert "index.html" in calls and "score.json" in calls
+
+    def test_live_game_uploads_no_game_card(self, mocker, uploads):
+        mocker.patch.object(
+            NCAAEvaluator,
+            "find_current_game",
+            return_value=NCAAGame(ResultType.NOT_YET, "10-8"),
+        )
+        app.run_update(force_upload=False)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        assert not any(key.startswith("g/") for key in keys)
+        homepage_html = uploads.call_args_list[1].args[0]
+        assert "https://diddukewin.com/cards/default.png" in homepage_html
+
+    def test_default_card_is_checked_once_per_process(self, mocker, uploads):
+        mocker.patch.object(
+            NCAAEvaluator,
+            "find_current_game",
+            return_value=NCAAGame(ResultType.NOT_YET, "10-8"),
+        )
+        app.run_update(force_upload=False)
+        app.run_update(force_upload=False)
+
+        keys = [c.kwargs.get("key") for c in uploads.call_args_list]
+        assert keys.count("cards/default.png") == 1
+
+    def test_forced_upload_of_last_known_game_keeps_existing_card(
+        self, mocker, uploads
+    ):
+        mocker.patch.object(NCAAEvaluator, "find_current_game", return_value=None)
+        mocker.patch(
+            "ddw.app.download",
+            return_value='<meta property="og:image" content="https://diddukewin.com/g/20261112-abc123/card.png">',
+        )
+        mocker.patch(
+            "ddw.app.parse_last_known_game",
+            return_value=LastKnownGame(ResultType.WIN, "82-75"),
+        )
+        app.run_update(force_upload=True)
+
+        keys = [c.kwargs.get("key", "index.html") for c in uploads.call_args_list]
+        assert keys == ["index.html", "score.json"]
+        homepage_html = uploads.call_args_list[0].args[0]
+        assert "https://diddukewin.com/g/20261112-abc123/card.png" in homepage_html
