@@ -8,6 +8,8 @@ metadata:
 spec:
   # One worker only, and never two at once: both would write R2 and post.
   replicas: 1
+  # Keep only one old ReplicaSet for rollback.
+  revisionHistoryLimit: 1
   strategy:
     type: Recreate
   selector:

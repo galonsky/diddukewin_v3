@@ -49,6 +49,7 @@ def test_package_contains_matching_code_and_chart_release(tmp_path):
     deployment = next(row for row in resources if row["kind"] == "Deployment")
     assert deployment["metadata"]["name"] == "diddukewin"
     assert deployment["spec"]["replicas"] == 1
+    assert deployment["spec"]["revisionHistoryLimit"] == 1
     assert deployment["spec"]["strategy"] == {"type": "Recreate"}
     pod = deployment["spec"]["template"]
     assert pod["metadata"]["annotations"]["checksum/config"]
